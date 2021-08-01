@@ -15,7 +15,7 @@
 import subprocess
 import sys
 import time
-import vision
+from aiy.coral import vision
 
 
 def usb_accelerator_connected():

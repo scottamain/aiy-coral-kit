@@ -23,7 +23,7 @@ import time
 import threading
 import tty
 
-import vision
+from aiy.coral import vision
 
 from pycoral.utils.dataset import read_label_file
 

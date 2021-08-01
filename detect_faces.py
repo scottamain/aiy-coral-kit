@@ -1,4 +1,4 @@
-import vision
+from aiy.coral import vision
 from time import sleep
 from pycoral.adapters.detect import BBox
 

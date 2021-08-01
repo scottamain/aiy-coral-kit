@@ -21,7 +21,7 @@ import tty
 
 from cv2 import imread
 from pycoral.utils.dataset import read_label_file
-import vision
+from aiy.coral import vision
 
 classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
 labels = read_label_file(vision.CLASSIFICATION_LABELS)
