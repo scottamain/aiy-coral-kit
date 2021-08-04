@@ -41,10 +41,9 @@ def is_point_in_box(point, bbox):
     Returns:
       True if the point is inside the bounding box; False otherwise
     """
-    if point:
-        x,y = point
-        if (x > bbox.xmin and x < bbox.xmax) and (y > bbox.ymin and y < bbox.ymax):
-            return True
+    x,y = point
+    if (x > bbox.xmin and x < bbox.xmax) and (y > bbox.ymin and y < bbox.ymax):
+        return True
     return False
 
 pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
