@@ -12,60 +12,51 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-r"""Example using PyCoral to estimate a single human pose with Edge TPU MoveNet.
+"""MoveNet pose estimation example."""
 
-For more details about MoveNet and its best practices, please see
-https://www.tensorflow.org/hub/tutorials/movenet
-Example usage:
-```
-bash examples/install_requirements.sh
-
-python3 examples/movenet_pose_estimation.py \
-  --model test_data/movenet_single_pose_lightning_ptq_edgetpu.tflite  \
-  --input test_data/squat.bmp
-```
-"""
-
-import argparse
-
-import cv2 # move to vision.py
-from PIL import Image
-from PIL import ImageDraw
-from pycoral.adapters import common
-from pycoral.utils.edgetpu import make_interpreter
 from aiy.coral import vision
+from pycoral.adapters.detect import BBox
 
-_NUM_KEYPOINTS = 17
+RIGHT_WRIST = int(vision.KeypointType.RIGHT_WRIST)
+LEFT_WRIST = int(vision.KeypointType.LEFT_WRIST)
 
-MODEL='models/movenet_single_pose_lightning_ptq_edgetpu.tflite'
+RED = (0, 0, 255) # BGR (not RGB)
 
-def get_body_points(img, interpreter):
-  #resized_img = img.resize(common.input_size(interpreter), Image.ANTIALIAS)
-  resized_img = cv2.resize(frame, common.input_size(interpreter), fx=0, fy=0,
-                                                                interpolation=cv2.INTER_CUBIC)
-  common.set_input(interpreter, resized_img)
-
-  interpreter.invoke()
-
-  pose = common.output_tensor(interpreter, 0).copy().reshape(_NUM_KEYPOINTS, 3)
-  print(pose)
-  return pose
+def get_fence(img_dims):
+    img_width, img_height = img_dims
+    xmin = 0
+    ymin = 0
+    xmax = int(img_width * 0.5)
+    ymax = int(img_height * 0.5)
+    return BBox(xmin, ymin, xmax, ymax)
 
 
-interpreter = make_interpreter(MODEL)
-interpreter.allocate_tensors()
+def is_point_in_box(point, bbox):
+    """
+    Check if the given (x,y) point lies within the given box.
+
+    Args:
+      point (int tuple): The (x,y)-coordinates for the point
+      bbox (BBox): A `BBox` (bounding box) object
+    Returns:
+      True if the point is inside the bounding box; False otherwise
+    """
+    if point:
+        x,y = point
+        if (x > bbox.xmin and x < bbox.xmax) and (y > bbox.ymin and y < bbox.ymax):
+            return True
+    return False
+
+pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
+fence = get_fence(vision.VIDEO_SIZE)
 
 # Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
-  points = get_body_points(frame, interpreter)
-  
-  #draw = ImageDraw.Draw(img)
-  height, width, _ = frame.shape
-  for i in range(0, _NUM_KEYPOINTS):
-      score = points[i][2]
-      if score > 0.3:
-          y = int(points[i][0] * height)
-          x = int(points[i][1] * width)
-          cv2.circle(frame, (x,y), radius=5, color=(0, 0, 255), thickness=-1)
+    vision.draw_rect(frame, fence)
+    pose = pose_detector.get_pose(frame)
+    keypoints = vision.draw_pose(frame, pose)
 
-
+    if RIGHT_WRIST in keypoints:
+        if is_point_in_box(keypoints[RIGHT_WRIST], fence):
+            vision.draw_rect(frame, fence, color=RED)
+    

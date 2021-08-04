@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os.path
+import enum
 import platform
 import sys
 
@@ -35,6 +36,7 @@ OBJECT_DETECTION_MODEL = 'models/ssd_mobilenet_v2_coco_quant_postprocess_edgetpu
 OBJECT_DETECTION_LABELS = 'models/coco_labels.txt'
 CLASSIFICATION_MODEL = 'models/tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite'
 CLASSIFICATION_LABELS = 'models/imagenet_labels.txt'
+MOVENET_MODEL='models/movenet_single_pose_lightning_ptq_edgetpu.tflite'
 
 VIDEO_SIZE = (640, 480)
 CORAL_COLOR = (86, 104, 237)
@@ -50,6 +52,76 @@ def make_interpreter(model_file):
 #########################
 ### VISION MODEL APIS ###
 #########################
+
+class KeypointType(enum.IntEnum):
+    """Pose kepoints."""
+    NOSE = 0
+    LEFT_EYE = 1
+    RIGHT_EYE = 2
+    LEFT_EAR = 3
+    RIGHT_EAR = 4
+    LEFT_SHOULDER = 5
+    RIGHT_SHOULDER = 6
+    LEFT_ELBOW = 7
+    RIGHT_ELBOW = 8
+    LEFT_WRIST = 9
+    RIGHT_WRIST = 10
+    LEFT_HIP = 11
+    RIGHT_HIP = 12
+    LEFT_KNEE = 13
+    RIGHT_KNEE = 14
+    LEFT_ANKLE = 15
+    RIGHT_ANKLE = 16
+
+KEYPOINT_EDGES = (
+    (KeypointType.NOSE, KeypointType.LEFT_EYE),
+    (KeypointType.NOSE, KeypointType.RIGHT_EYE),
+    (KeypointType.NOSE, KeypointType.LEFT_EAR),
+    (KeypointType.NOSE, KeypointType.RIGHT_EAR),
+    (KeypointType.LEFT_EAR, KeypointType.LEFT_EYE),
+    (KeypointType.RIGHT_EAR, KeypointType.RIGHT_EYE),
+    (KeypointType.LEFT_EYE, KeypointType.RIGHT_EYE),
+    (KeypointType.LEFT_SHOULDER, KeypointType.RIGHT_SHOULDER),
+    (KeypointType.LEFT_SHOULDER, KeypointType.LEFT_ELBOW),
+    (KeypointType.LEFT_SHOULDER, KeypointType.LEFT_HIP),
+    (KeypointType.RIGHT_SHOULDER, KeypointType.RIGHT_ELBOW),
+    (KeypointType.RIGHT_SHOULDER, KeypointType.RIGHT_HIP),
+    (KeypointType.LEFT_ELBOW, KeypointType.LEFT_WRIST),
+    (KeypointType.RIGHT_ELBOW, KeypointType.RIGHT_WRIST),
+    (KeypointType.LEFT_HIP, KeypointType.RIGHT_HIP),
+    (KeypointType.LEFT_HIP, KeypointType.LEFT_KNEE),
+    (KeypointType.RIGHT_HIP, KeypointType.RIGHT_KNEE),
+    (KeypointType.LEFT_KNEE, KeypointType.LEFT_ANKLE),
+    (KeypointType.RIGHT_KNEE, KeypointType.RIGHT_ANKLE),
+)
+
+class PoseDetector:
+  def __init__(self, model):
+    self.interpreter = make_interpreter(model)
+    self.interpreter.allocate_tensors()
+    
+  def get_pose(self, frame, threshold=0.01):
+    resized_img = cv2.resize(frame, common.input_size(self.interpreter),
+                             fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
+    common.set_input(self.interpreter, resized_img)
+    self.interpreter.invoke()
+    pose = common.output_tensor(self.interpreter, 0).copy().reshape(len(KeypointType), 3)
+    return pose
+
+def draw_pose(frame, pose, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
+  height, width, _ = frame.shape
+  points = {}
+  for i in range(0, len(KeypointType)):
+    score = pose[i][2]
+    if score > threshold:
+      y = int(pose[i][0] * height)
+      x = int(pose[i][1] * width)
+      cv2.circle(frame, (x,y), radius=circle_radius, color=color, thickness=-1)
+      points[i] = (x, y)
+  for a, b in KEYPOINT_EDGES:
+    if a not in points or b not in points: continue
+    cv2.line(frame, points[a], points[b], color, thickness=line_thickness)
+  return points
 
 class Detector:
   """Performs inferencing with an object detection model.
