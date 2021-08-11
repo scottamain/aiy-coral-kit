@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import subprocess
 import sys
 import time
@@ -25,10 +26,16 @@ def usb_accelerator_connected():
     return True
   return False
 
+
 if __name__ == '__main__':
+    
+  print('--- Checking required files ---')
+  if not os.path.isfile(vision.CLASSIFICATION_MODEL):
+    print('Downloading files...')
+    subprocess.call(["bash", "install_requirements.sh"])
+  print("Done.\n")
 
   print('--- Testing camera ---')
-
   TIME_LIMIT = 7
   start = time.time()
   for frame in vision.get_frames():
