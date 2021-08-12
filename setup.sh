@@ -22,16 +22,39 @@ function get_repo () {
     git clone https://github.com/${REPO_PROJECT}/${REPO_NAME}
 }
 
+function enable_camera () {
+    CAM=$(sudo raspi-config nonint get_camera)
+    if [ $CAM -eq 1 ]; then
+        sudo raspi-config nonint do_camera 0
+        echo "Camera is now enabled, but you must reboot for it to take effect."
+        echo "After reboot, run setup.sh again to finish the setup."
+      
+        while true; do
+          echo
+          read -p "Reboot now? (y/n) " yn
+          case $yn in
+            [Yy]* )
+              echo "Rebooting..."
+              sudo reboot now; break;;
+            [Nn]* )
+              echo "Setup cancelled. You must reboot to continue setup."; exit;;
+            * )
+              echo "Please answer yes or no.";;
+          esac
+        done
+    else
+      echo "Camera is already enabled."
+    fi
+}
+
 echo
-echo "Enabling the camera..."
-sudo raspi-config nonint do_camera 0
-echo "Done."
+echo "Checking the camera..."
+enable_camera
 
 echo
 echo "Installing required packages for Coral..."
 echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-#echo libedgetp1-max libedgetpu/accepted-eula boolean true | debconf-set-selections
 
 sudo apt-get update && sudo apt-get -y install \
   libedgetpu1-max \
@@ -55,6 +78,8 @@ echo "Done."
 echo
 echo "Setup is done."
 
+
+# TODO: First check if display is available
 while true; do
   echo
   read -p "Run a quick hardware test? (y/n) " yn
@@ -66,7 +91,6 @@ while true; do
     * ) echo "Please answer yes or no.";;
   esac
 done
-
 
 while true; do
   echo
@@ -81,4 +105,4 @@ while true; do
 done
 
 echo
-echo "All done! See more demos in /${REPO_NAME}."
+echo "All done! See more demos in ${REPO_NAME}/."
