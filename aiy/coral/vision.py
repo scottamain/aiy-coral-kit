@@ -257,7 +257,7 @@ def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
       break
 
     if attempts == 0:
-      print("Cannot initialize camera!", file=sys.stderr)
+      print("Cannot initialize camera!\nMake sure the camera is connected.", file=sys.stderr)
       sys.exit(1)
 
     cap.release()

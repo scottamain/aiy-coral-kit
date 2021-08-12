@@ -1,3 +1,4 @@
+import argparse
 from aiy.coral import vision
 from time import sleep
 from pycoral.adapters.detect import BBox
@@ -91,6 +92,11 @@ def get_center_point(bbox):
 
 # Main program ------------------------
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--show_fence", default=False, action="store_true",
+                    help="Enable fence detection")
+args = parser.parse_args()
+
 # Load the neural network model
 detector = vision.Detector(vision.FACE_DETECTION_MODEL)
 
@@ -99,13 +105,13 @@ for frame in vision.get_frames():
   faces = detector.get_objects(frame)
   # Draw bounding boxes on the frame and display it
   vision.draw_objects(frame, faces)
-  # Experiment code:
+  
   if faces:
       bbox = faces[0].bbox
       x, y = get_center_point(bbox)
-      vision.draw_circle(frame, (x,y), 10)
+      # vision.draw_circle(frame, (x,y), 10)
       
-  if (len(faces) == 1):
+  if (args.show_fence and len(faces) == 1):
     # Get the location of the face (one of six positions)
     bbox = get_location(faces[0].bbox, vision.VIDEO_SIZE)
     # Set the Raspimon pose

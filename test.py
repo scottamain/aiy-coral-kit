@@ -33,31 +33,31 @@ if __name__ == '__main__':
   if not os.path.isfile(vision.CLASSIFICATION_MODEL):
     print('Downloading files...')
     subprocess.call(["bash", "install_requirements.sh"])
-  print("Done.\n")
+  print("Files okay.\n")
 
   print('--- Testing camera ---')
-  TIME_LIMIT = 7
+  TIME_LIMIT = 4
   start = time.time()
   for frame in vision.get_frames():
     elapsed = int(time.time() - start)
     print('Closing video in...', TIME_LIMIT - elapsed, end='\r')
     if (elapsed >= TIME_LIMIT):
-      print('\nCamera test done.\n')
+      print('\nCamera okay.\n')
       break
     pass
 
   print('--- Testing USB Accelerator ---')
 
   if not usb_accelerator_connected():
-    print('Coral USB Accelerator NOT found! :(')
+    print('Coral USB Accelerator NOT found!')
+    print('Make sure it\'s connected to the Raspberry Pi.')
     sys.exit(1)
-  print('Coral USB Accelerator found.')
-
+  
   print('Loading a model...')
   classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
   classes = classifier.get_classes(frame)
   if classes:
-    print('Done.')
+    print('USB Accelerator okay.')
 
   print('\nAll tests complete.')
 

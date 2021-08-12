@@ -20,6 +20,11 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEST_DATA_URL="https://github.com/google-coral/test_data/raw/master/"
 readonly MODEL_DIR="${SCRIPT_DIR}/models"
 
+if [ -d "${MODEL_DIR}" ]; then
+  echo "Models directory exists. Skipping downloads."
+  exit
+fi
+
 mkdir -p "${MODEL_DIR}"
 
 (cd "${MODEL_DIR}" && \
