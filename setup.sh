@@ -57,12 +57,26 @@ echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sud
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 
 sudo apt-get update && sudo apt-get -y install \
-  libedgetpu1-max \
+  libedgetpu1-std \
   python3-pycoral \
   python3-tflite-runtime \
   python3-numpy \
   python3-pyaudio \
   python3-opencv
+
+while true; do
+  echo
+  echo "We've installed the standard library for the Coral Edge TPU."
+  echo "For increased Edge TPU speeds, you can install the max-performance library."
+  read -p "Do you want to install the max-performance library? (y/n) " yn
+  case $yn in
+    [Yy]* )
+      sudo apt-get install libedgetpu1-max -y; break;;
+    [Nn]* ) break;;
+    * ) echo "Please answer yes or no.";;
+  esac
+done
+
 echo "Done."
 
 echo
@@ -86,7 +100,10 @@ while true; do
   case $yn in
     [Yy]* )
       echo
-      (cd "${REPO_NAME}" && python3 test.py); break;;
+      if !(cd "${REPO_NAME}" && python3 test.py); then
+        exit;
+      fi
+      break;;
     [Nn]* ) break;;
     * ) echo "Please answer yes or no.";;
   esac
