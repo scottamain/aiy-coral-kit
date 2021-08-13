@@ -14,6 +14,7 @@
 # limitations under the License.
 """MoveNet pose estimation example."""
 
+import argparse
 from aiy.coral import vision
 from pycoral.adapters.detect import BBox
 
@@ -46,16 +47,24 @@ def is_point_in_box(point, bbox):
         return True
     return False
 
+
+# Main program ------------------------
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--show_fence", default=False, action="store_true",
+                    help="Enable fence detection")
+args = parser.parse_args()
+
 pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
 fence = get_fence(vision.VIDEO_SIZE)
 
 # Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
-    vision.draw_rect(frame, fence)
     pose = pose_detector.get_pose(frame)
     keypoints = vision.draw_pose(frame, pose)
 
-    if RIGHT_WRIST in keypoints:
+    if args.show_fence and RIGHT_WRIST in keypoints:
+        vision.draw_rect(frame, fence)
         if is_point_in_box(keypoints[RIGHT_WRIST], fence):
             vision.draw_rect(frame, fence, color=RED)
     

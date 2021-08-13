@@ -267,6 +267,7 @@ def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
   try:
+    print("Press Q to quit")
     while True:
       success, frame = cap.read()
       frame = cv2.flip(frame, 1)
