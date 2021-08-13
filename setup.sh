@@ -90,7 +90,11 @@ echo "Downloading model files..."
 echo "Done."
 
 echo
-echo "Setup is done."
+echo "Setup is done. Now let's verify it all works."
+echo "To continue, be sure the Pi Camera is connected."
+echo "Also connect the Coral USB Accelerator now."
+echo "If the USB Accelerator is already connected, unplug it and plug it back in."
+read -n 1 -s -r -p "Press any key to continue..."
 
 
 # TODO: First check if display is available
