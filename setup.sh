@@ -84,10 +84,6 @@ echo "Downloading AIY Coral Kit repo..."
 get_repo
 echo "Done."
 
-echo
-echo "Downloading model files..."
-(cd "${REPO_NAME}" && bash install_requirements.sh)
-echo "Done."
 
 echo
 echo "Setup is done. Now let's verify it all works."
@@ -95,35 +91,6 @@ echo "To continue, be sure the Pi Camera is connected."
 echo "Also connect the Coral USB Accelerator now."
 echo "If the USB Accelerator is already connected, unplug it and plug it back in."
 read -n 1 -s -r -p "Press any key to continue..."
-
-
-# TODO: First check if display is available
-while true; do
-  echo
-  read -p "Run a quick hardware test? (y/n) " yn
-  case $yn in
-    [Yy]* )
-      echo
-      if !(cd "${REPO_NAME}" && python3 test.py); then
-        exit;
-      fi
-      break;;
-    [Nn]* ) break;;
-    * ) echo "Please answer yes or no.";;
-  esac
-done
-
-while true; do
-  echo
-  read -p "Try the face detection demo? (y/n) " yn
-  case $yn in
-    [Yy]* )
-      echo "Press Q to quit the demo."
-      (cd "${REPO_NAME}" && python3 detect_faces.py); break;;
-    [Nn]* ) break;;
-    * ) echo "Please answer yes or no.";;
-  esac
-done
-
 echo
-echo "All done! See more demos in ${REPO_NAME}/."
+
+bash ${REPO_NAME}/run_demos.sh
