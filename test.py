@@ -16,8 +16,11 @@ import os
 import subprocess
 import sys
 import time
+import traceback
 from aiy.coral import vision
 
+
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def usb_accelerator_connected():
   if subprocess.run(["lsusb", "-d", "18d1:9302"], capture_output=True).returncode == 0:
@@ -32,7 +35,7 @@ if __name__ == '__main__':
   print('--- Checking required files ---')
   if not os.path.isfile(vision.CLASSIFICATION_MODEL):
     print('Downloading files...')
-    subprocess.call(["bash", "install_requirements.sh"])
+    subprocess.call(["bash", SCRIPT_DIR + "/install_requirements.sh"])
   print("Files okay.\n")
 
   print('--- Testing camera ---')
@@ -54,10 +57,16 @@ if __name__ == '__main__':
     sys.exit(1)
   
   print('Loading a model...')
-  classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
-  classes = classifier.get_classes(frame)
-  if classes:
-    print('USB Accelerator okay.')
+  try:
+    classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
+    classes = classifier.get_classes(frame)
+    if classes:
+      print('USB Accelerator okay.')
+  except ValueError:
+    traceback.print_exc()
+    print('Something went wrong.')
+    print('Try unplugging the USB Accelerator, then plug it back in and run the script again.')
+    sys.exit(1)
 
   print('\nAll tests complete.')
 
