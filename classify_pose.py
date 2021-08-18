@@ -12,15 +12,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""MoveNet pose estimation example."""
+"""MoveNet pose estimation and classification example."""
 
 from aiy.coral import vision
-from pycoral.adapters.detect import BBox
+from pycoral.utils.dataset import read_label_file
+
+MOVENET_CLASSIFY_MODEL='models/pose-classifier.tflite'
+MOVENET_CLASSIFY_LABELS='models/pose-labels.txt'
 
 pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
+pose_classifier = vision.PoseClassifier(MOVENET_CLASSIFY_MODEL)
+labels = read_label_file(MOVENET_CLASSIFY_LABELS)
 
 # Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
-    pose = pose_detector.get_pose(frame)
-    keypoints = vision.draw_pose(frame, pose)
+    # Detect the body points and draw the skeleton
+    keypoints = pose_detector.get_keypoints(frame)
+    vision.draw_pose(frame, keypoints)
+    # Classify different yoga poses
+    label_id = pose_classifier.get_pose(keypoints)
+    vision.draw_label(frame, labels.get(label_id))
     

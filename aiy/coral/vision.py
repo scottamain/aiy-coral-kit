@@ -100,7 +100,7 @@ class PoseDetector:
     self.interpreter = make_interpreter(model)
     self.interpreter.allocate_tensors()
     
-  def get_pose(self, frame, threshold=0.01):
+  def get_keypoints(self, frame, threshold=0.01):
     resized_img = cv2.resize(frame, common.input_size(self.interpreter),
                              fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
     common.set_input(self.interpreter, resized_img)
@@ -108,14 +108,34 @@ class PoseDetector:
     pose = common.output_tensor(self.interpreter, 0).copy().reshape(len(KeypointType), 3)
     return pose
 
-def draw_pose(frame, pose, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
+class PoseClassifier:
+  def __init__(self, model):
+    self.interpreter = tflite.Interpreter(model_path=model)
+    self.interpreter.allocate_tensors()
+    
+  def get_pose(self, keypoints, threshold=0.01):
+    # Reshape input for classify model
+    keypoints = keypoints.flatten().reshape(1,51)
+    input_index = self.interpreter.get_input_details()[0]["index"]
+    output_index = self.interpreter.get_output_details()[0]["index"]
+    self.interpreter.set_tensor(input_index, keypoints)
+    self.interpreter.invoke()
+    output = self.interpreter.tensor(output_index)
+    predicted_label = np.argmax(output()[0])
+    return predicted_label      
+
+def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
+  """Draws the pose skeleton on the image.
+  
+  Returns: A dictionary of all keypoints over the threshold and their corresponding locations.
+  """
   height, width, _ = frame.shape
   points = {}
   for i in range(0, len(KeypointType)):
-    score = pose[i][2]
+    score = keypoints[i][2]
     if score > threshold:
-      y = int(pose[i][0] * height)
-      x = int(pose[i][1] * width)
+      y = int(keypoints[i][0] * height)
+      x = int(keypoints[i][1] * width)
       cv2.circle(frame, (x,y), radius=circle_radius, color=color, thickness=-1)
       points[i] = (x, y)
   for a, b in KEYPOINT_EDGES:
@@ -226,6 +246,18 @@ def draw_classes(frame, classes, labels, color=CORAL_COLOR):
   for index, score in classes:
     label = '%s (%.2f)' % (labels.get(index, 'n/a'), score)
     cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
+
+
+def draw_label(frame, label, color=CORAL_COLOR):
+  """
+  Draws a text label on the display output.
+
+  Args:
+    frame: The bitmap frame to draw upon.
+    labels: The string to write.
+    color: The RGB color to use for the text.
+  """
+  cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
 
 def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
                capture_device_index=0):
