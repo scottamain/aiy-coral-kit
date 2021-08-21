@@ -268,7 +268,7 @@ def draw_label(frame, label, color=CORAL_COLOR):
   cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
 
 def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
-               capture_device_index=0):
+               capture_device_index=0, mirror=True, return_key=False):
   """
   Gets a stream of image frames from the default camera.
 
@@ -309,13 +309,17 @@ def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
 
   try:
     while True:
+      key = cv2.waitKey(1)
       success, frame = cap.read()
-      frame = cv2.flip(frame, 1)
+      if mirror:
+        frame = cv2.flip(frame, 1)
       if success:
-        yield frame
+        if return_key:
+          yield (frame, key)
+        else:
+          yield frame
         cv2.imshow(title, frame)
 
-      key = cv2.waitKey(1)
       if key != -1 and not handle_key(key, frame):
         break
   finally:
