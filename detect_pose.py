@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""MoveNet pose estimation example."""
-
 from aiy.coral import vision
 from pycoral.adapters.detect import BBox
 
@@ -22,5 +20,5 @@ pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
 # Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
     pose = pose_detector.get_pose(frame)
-    keypoints = vision.draw_pose(frame, pose)
+    vision.draw_pose(frame, pose)
     

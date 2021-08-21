@@ -21,16 +21,9 @@ from pycoral.adapters.detect import BBox
 RIGHT_WRIST = int(vision.KeypointType.RIGHT_WRIST)
 LEFT_WRIST = int(vision.KeypointType.LEFT_WRIST)
 
-RED = (0, 0, 255) # BGR (not RGB)
-
-def get_fence(img_dims):
-    img_width, img_height = img_dims
-    xmin = 0
-    ymin = 0
-    xmax = int(img_width * 0.5)
-    ymax = int(img_height * 0.5)
-    return BBox(xmin, ymin, xmax, ymax)
-
+# BGR (not RGB)
+RED = (0, 0, 255)
+GREEN = (0, 255, 0) 
 
 def is_point_in_box(point, bbox):
     """
@@ -48,23 +41,22 @@ def is_point_in_box(point, bbox):
     return False
 
 
-# Main program ------------------------
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--show_fence", default=False, action="store_true",
-                    help="Enable fence detection")
-args = parser.parse_args()
+width, height = vision.VIDEO_SIZE
+xmin = 0
+ymin = 0
+xmax = int(width * 0.5)
+ymax = int(height * 0.5)
+fence = BBox(xmin, ymin, xmax, ymax)
 
 pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
-fence = get_fence(vision.VIDEO_SIZE)
 
 # Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
     pose = pose_detector.get_pose(frame)
     keypoints = vision.draw_pose(frame, pose)
 
-    if args.show_fence and RIGHT_WRIST in keypoints:
-        vision.draw_rect(frame, fence)
+    vision.draw_rect(frame, fence, color=RED)
+    if RIGHT_WRIST in keypoints:
         if is_point_in_box(keypoints[RIGHT_WRIST], fence):
-            vision.draw_rect(frame, fence, color=RED)
+            vision.draw_rect(frame, fence, color=GREEN)
     

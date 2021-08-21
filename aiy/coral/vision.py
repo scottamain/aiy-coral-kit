@@ -100,20 +100,21 @@ class PoseDetector:
     self.interpreter = make_interpreter(model)
     self.interpreter.allocate_tensors()
     
-  def get_keypoints(self, frame, threshold=0.01):
+  def get_pose(self, frame, threshold=0.01):
     resized_img = cv2.resize(frame, common.input_size(self.interpreter),
                              fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
     common.set_input(self.interpreter, resized_img)
     self.interpreter.invoke()
     pose = common.output_tensor(self.interpreter, 0).copy().reshape(len(KeypointType), 3)
     return pose
+    
 
 class PoseClassifier:
   def __init__(self, model):
     self.interpreter = tflite.Interpreter(model_path=model)
     self.interpreter.allocate_tensors()
     
-  def get_pose(self, keypoints, threshold=0.01):
+  def get_pose_type(self, keypoints, threshold=0.01):
     # Reshape input for classify model
     keypoints = keypoints.flatten().reshape(1,51)
     input_index = self.interpreter.get_input_details()[0]["index"]
@@ -122,13 +123,10 @@ class PoseClassifier:
     self.interpreter.invoke()
     output = self.interpreter.tensor(output_index)
     predicted_label = np.argmax(output()[0])
-    return predicted_label      
+    return predicted_label
 
-def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
-  """Draws the pose skeleton on the image.
-  
-  Returns: A dictionary of all keypoints over the threshold and their corresponding locations.
-  """
+def get_keypoint_types(frame, keypoints, threshold=0.01):
+  """Converts keypoint data into dictionary with values scaled for the image size."""
   height, width, _ = frame.shape
   points = {}
   for i in range(0, len(KeypointType)):
@@ -136,11 +134,21 @@ def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR, circle_radius=
     if score > threshold:
       y = int(keypoints[i][0] * height)
       x = int(keypoints[i][1] * width)
-      cv2.circle(frame, (x,y), radius=circle_radius, color=color, thickness=-1)
       points[i] = (x, y)
+  return points
+
+def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
+  """Draws the pose skeleton on the image."""
+  # Get the structured keypoint types
+  points = get_keypoint_types(frame, keypoints, threshold)
+  # Draw all points (that have scores greater than the threshold)
+  for i in points:
+    x, y = points[i]
+    cv2.circle(frame, (x,y), radius=circle_radius, color=color, thickness=-1)
+  # Draw lines between points if both point pairs are found
   for a, b in KEYPOINT_EDGES:
-    if a not in points or b not in points: continue
-    cv2.line(frame, points[a], points[b], color, thickness=line_thickness)
+    if a in points and b in points:
+      cv2.line(frame, points[a], points[b], color, thickness=line_thickness)
   return points
 
 class Detector:
@@ -275,6 +283,7 @@ def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
   width, height = size
 
   if not handle_key:
+    print("Press Q to quit")
     def handle_key(key, frame):
       if key == ord('q') or key == ord('Q'):
         return False
@@ -299,7 +308,6 @@ def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
   try:
-    print("Press Q to quit")
     while True:
       success, frame = cap.read()
       frame = cv2.flip(frame, 1)

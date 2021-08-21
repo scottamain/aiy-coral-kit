@@ -27,9 +27,9 @@ labels = read_label_file(MOVENET_CLASSIFY_LABELS)
 # Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
     # Detect the body points and draw the skeleton
-    keypoints = pose_detector.get_keypoints(frame)
-    vision.draw_pose(frame, keypoints)
+    pose = pose_detector.get_pose(frame)
+    vision.draw_pose(frame, pose)
     # Classify different yoga poses
-    label_id = pose_classifier.get_pose(keypoints)
+    label_id = pose_classifier.get_pose_type(pose)
     vision.draw_label(frame, labels.get(label_id))
     
