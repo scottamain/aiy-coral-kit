@@ -94,7 +94,7 @@ def main():
     def generate_filename(label_id):
       class_dir = labels.get(label_id, str(label_id))
       timestamp = datetime.now()
-      filename = "PI_CAM_" + timestamp.strftime("%Y-%m-%d-%H%M-%S%f") + '.png'
+      filename = "PI_CAM_" + timestamp.strftime("%Y%m%d_%H%M%S%f") + '.png'
       return os.path.join(args.capture_dir, class_dir, filename)
 
     # Handle key events from GUI window.

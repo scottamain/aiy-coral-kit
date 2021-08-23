@@ -39,7 +39,7 @@ for frame in vision.get_frames():
   # If everyone's in the box and some time has passed since last photo
   if faces and faces_in_box == len(faces) and time() - snap_time > DELAY_SECS:
       timestamp = datetime.now()
-      filename = "SMART_CAM_" + timestamp.strftime("%Y-%m-%d_%H%M%S") + '.jpg'
+      filename = "SMART_CAM_" + timestamp.strftime("%Y%m%d_%H%M%S") + '.png'
       filename = os.path.join(PICTURE_DIR, filename)
       vision.save_frame(filename, frame)
       snap_time = time()
