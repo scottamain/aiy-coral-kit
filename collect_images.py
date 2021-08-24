@@ -75,7 +75,7 @@ def main():
   parser.add_argument('--labels', '-l', type=str, default=None,
                       help='Labels file')
   parser.add_argument('--continuous', '-c', type=int, default=0,
-                      help='Continuously capture the number of specified image')
+                      help='Continuously capture the number of specified images')
   parser.add_argument('--capture_dir', '-d', type=str, default='capture',
                       help='Capture directory')
   parser.add_argument('--capture_device_index', '-i', type=int, default=0,
@@ -113,7 +113,6 @@ def main():
     SNAP_DELAY_SECS = 1/3
     snap_time = int()
     snap_count = int()
-    continuous_label_id = int()
     continuous_active = False
 
     for frame, key in vision.get_frames(handle_key=handle_key,
@@ -122,7 +121,7 @@ def main():
       # Handle continous capture mode
       if args.continuous:
         if key is not None and (ord('0') <= key <= ord('9')):
-          continuous_label_id = key - ord('0')
+          label_id = key - ord('0')
           continuous_active = True
           start_time = time()
         if continuous_active:
@@ -135,12 +134,14 @@ def main():
             else:
               # Wait a little between frames
               if (time() - snap_time > SNAP_DELAY_SECS):
-                filename = generate_filename(continuous_label_id)
+                filename = generate_filename(label_id)
                 submit((filename, frame.copy()))
                 snap_time = time()
                 snap_count += 1
           elif time() - snap_time > 1: # Artificial delay to let the last save finish
-            print('Captured', snap_count, 'photos for label "' + str(continuous_label_id) + '"')
+            label_name = str(label_id)
+            label_name += ' (' + labels[label_id] + ')' if labels else ''
+            print('Captured', snap_count, 'photos for label ' + label_name)
             snap_count = 0
             continuous_active = False
       # Handle key events from console.
