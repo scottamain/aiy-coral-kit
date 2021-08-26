@@ -62,7 +62,9 @@ sudo apt-get update && sudo apt-get -y install \
   python3-tflite-runtime \
   python3-numpy \
   python3-pyaudio \
-  python3-opencv
+  python3-opencv \
+  zip \
+  unzip
 
 while true; do
   echo
