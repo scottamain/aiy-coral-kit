@@ -12,13 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""MoveNet pose estimation and classification example."""
+"""MoveNet pose classification example.
+
+You must first complete the Google Colab to train the pose classification model:
+https://colab.sandbox.google.com/github/tensorflow/tensorflow/blob/master/tensorflow/lite/g3doc/tutorials/pose_classification.ipynb
+"""
 
 from aiy.coral import vision
 from pycoral.utils.dataset import read_label_file
 
-MOVENET_CLASSIFY_MODEL='models/pose-classifier.tflite'
-MOVENET_CLASSIFY_LABELS='models/pose-labels.txt'
+MOVENET_CLASSIFY_MODEL='models/pose_classifier.tflite'
+MOVENET_CLASSIFY_LABELS='models/pose_labels.txt'
 
 pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
 pose_classifier = vision.PoseClassifier(MOVENET_CLASSIFY_MODEL)
