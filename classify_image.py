@@ -72,7 +72,7 @@ def main():
   parser.add_argument('-l', '--labels',
                       help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
   parser.add_argument('-i', '--input',
-                      help='Image to be classified. If not given, use spacebar to capture an image.')
+                      help='Image to be classified. If not given, use spacebar to capture and classify an image.')
   args = parser.parse_args()
 
   if args.model:

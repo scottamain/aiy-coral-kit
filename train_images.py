@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """
-By default all captured images are saved to 'capture' directory.
+Retrains an image classification model to learn new classifications.
 
-Capture images:
+First capture your images:
   python3 collect_images.py -l labels.txt
 
-Train new model using captured images:
-  python3 train_images.py -l labels.txt -m models/mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite
+Then retrain the model using the captured images:
+  python3 train_images.py -l labels.txt
 """
 
 import argparse
@@ -31,8 +31,8 @@ from pycoral.adapters import classify
 from pycoral.adapters import common
 from pycoral.learn.imprinting.engine import ImprintingEngine
 from pycoral.utils.edgetpu import make_interpreter
-
 from pycoral.utils.dataset import read_label_file
+from aiy.coral import vision
 
 def read_image(path, shape):
   with Image.open(path) as img:
@@ -64,10 +64,10 @@ def main():
   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('--labels', '-l', type=str, required=True,
                       help='Labels file')
-  parser.add_argument('--capture_dir', '-d', type=str, default='capture',
-                      help='Capture directory')
-  parser.add_argument('--model', '-m', type=str, required=True,
-                      help='Base model')
+  parser.add_argument('--captures_dir', '-d', type=str, default='captures',
+                      help='Directory with your training images')
+  parser.add_argument('--model', '-m', type=str, default=vision.CLASSIFICATION_IMPRINTING_MODEL,
+                      help='The base model upon which to add new classifications')
   parser.add_argument('--out_model', '-om', type=str, default='my-model.tflite',
                       help='Output model')
   args = parser.parse_args()

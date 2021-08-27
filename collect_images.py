@@ -82,10 +82,10 @@ def main():
                       help='Labels file')
   parser.add_argument('--continuous', '-c', type=int, default=0,
                       help='Continuously capture the number of specified images')
-  parser.add_argument('--capture_dir', '-d', type=str, default='capture',
-                      help='Capture directory')
+  parser.add_argument('--captures_dir', '-d', type=str, default='captures',
+                      help='Directory for image captures')
   parser.add_argument('--capture_device_index', '-i', type=int, default=0,
-                      help='Capture device index')
+                      help='Hardware capture device index')
   args = parser.parse_args()
 
   labels = {}
