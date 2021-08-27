@@ -69,6 +69,12 @@ def save_frame(request):
   filename, frame = request
   vision.save_frame(filename, frame)
   print('Saved: %s' % filename)
+  
+def print_help(labels):
+  print("Press buttons '0' .. '9' to save images from the camera.")
+  if labels:
+    for key in sorted(labels):
+      print(key, '-', labels[key])
 
 def main():
   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -82,13 +88,10 @@ def main():
                       help='Capture device index')
   args = parser.parse_args()
 
-  print("Press buttons '0' .. '9' to save images from the camera.")
-
   labels = {}
   if args.labels:
     labels = read_label_file(args.labels)
-    for key in sorted(labels):
-      print(key, '-', labels[key])
+  print_help(labels)
 
   with nonblocking(sys.stdin) as get_char, worker(save_frame) as submit:
     def generate_filename(label_id):
@@ -101,6 +104,9 @@ def main():
     def handle_key(key, frame):
       if key == ord('q') or key == ord('Q'):
         return False  # Stop processing frames.
+      if key == ord('h') or key == ord('H'):
+        print_help(labels)
+        return True
       if args.continuous:
         return True
       if ord('0') <= key <= ord('9'):
