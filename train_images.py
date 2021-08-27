@@ -73,7 +73,7 @@ def main():
   args = parser.parse_args()
 
   labels = read_label_file(args.labels)
-  train(args.capture_dir, labels, args.model, args.out_model)
+  train(args.captures_dir, labels, args.model, args.out_model)
 
 if __name__ == '__main__':
   main()
