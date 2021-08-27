@@ -20,4 +20,4 @@ for frame in vision.get_frames():
     if classes:
         score = classes[0].score
         label = labels.get(classes[0].id)
-        vision.draw_label(frame, label)
+        vision.draw_label(frame, f'{label}: {round(score,4)}')
