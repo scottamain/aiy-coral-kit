@@ -56,7 +56,9 @@ echo "Installing required packages for Coral..."
 echo "deb https://packages.cloud.google.com/apt coral-edgetpu-stable main" | sudo tee /etc/apt/sources.list.d/coral-edgetpu.list
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 
-sudo apt-get update && sudo apt-get -y install \
+sudo apt-get update --allow-releaseinfo-change
+
+sudo apt-get -y install \
   libedgetpu1-std \
   python3-pycoral \
   python3-tflite-runtime \
@@ -88,11 +90,12 @@ echo "Done."
 
 
 echo
-echo "Setup is done. Now let's verify it all works."
-echo "To continue, be sure the Pi Camera is connected."
-echo "Also connect the Coral USB Accelerator now."
-echo "If the USB Accelerator is already connected, unplug it and plug it back in."
-read -n 1 -s -r -p "Press any key to continue..."
+echo "Setup is done. Now let's verify it all works:"
+echo "  1. Be sure the Pi Camera is connected."
+echo "  2. Connect the Coral USB Accelerator."
+echo "     If the USB Accelerator is already connected, unplug it and plug it back in."
+read -n 1 -s -r -p "  3. Then press any key to continue..."
+echo
 echo
 
 bash ${REPO_NAME}/run_demos.sh
