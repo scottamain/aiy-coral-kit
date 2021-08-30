@@ -30,7 +30,6 @@ function enable_camera () {
         echo "After reboot, run setup.sh again to finish the setup."
       
         while true; do
-          echo
           read -p "Reboot now? (y/n) " yn
           case $yn in
             [Yy]* )
@@ -98,4 +97,4 @@ read -n 1 -s -r -p "  3. Then press any key to continue..."
 echo
 echo
 
-bash ${REPO_NAME}/run_demos.sh
+bash ${REPO_NAME}/run_demo.sh
