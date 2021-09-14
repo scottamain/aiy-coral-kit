@@ -14,30 +14,9 @@
 # limitations under the License.
 
 # This script is designed to run on the Raspberry Pi OS.
-# It verifies the camera, installs Coral libraries, and clones our projects repo.
+# It verifies the camera is enabled and installs Coral libraries.
 
 set -e
-
-export REPO_PROJECT="scottamain"
-export REPO_NAME="aiy-coral-kit"
-
-function get_repo () {
-    # Check if repo exists
-    if [ -d "${REPO_NAME}" ]; then
-      echo "${REPO_NAME} directory exists. Skipping git clone."
-      return
-    fi
-    
-    # Check if git is installed
-    git=`dpkg -l | grep "ii  git " | wc -l`
-    if [ $git -eq 0 ]; then
-        echo "Installing git..."
-        sudo apt-get update
-        apt-get install git -y
-    fi
-
-    git clone https://github.com/${REPO_PROJECT}/${REPO_NAME}
-}
 
 function enable_camera () {
     CAM=$(sudo raspi-config nonint get_camera)
@@ -45,7 +24,7 @@ function enable_camera () {
         sudo raspi-config nonint do_camera 0
         echo "Camera is now enabled, but you must reboot for it to take effect."
         echo "After reboot, run setup.sh again to finish the setup."
-      
+
         while true; do
           read -p "Reboot now? (y/n) " yn
           case $yn in
@@ -96,18 +75,8 @@ while true; do
     * ) echo "Please answer yes or no.";;
   esac
 done
-echo "Done."
 
 echo
-echo "Downloading AIY Coral Kit repo..."
-get_repo
-echo "Done."
-
-echo
-echo "Setup is complete. You should now verify it all works:"
-echo "  1. Be sure your camera is connected to the Raspberry Pi."
-echo "  2. Connect the Coral USB Accelerator to the Raspberry Pi."
-echo "     If the USB Accelerator is already connected, unplug it and plug it back in."
-echo "  3. Download our models and run a test with this command:"
-echo "     bash ${REPO_NAME}/run_demo.sh"
+echo "Coral software setup is complete."
+echo "To continue setup on a Raspberry Pi, follow the guide at g.co/coral/kit-setup"
 echo
