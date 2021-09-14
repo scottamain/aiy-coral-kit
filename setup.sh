@@ -108,5 +108,6 @@ echo "Setup is complete. You should now verify it all works:"
 echo "  1. Be sure your camera is connected to the Raspberry Pi."
 echo "  2. Connect the Coral USB Accelerator to the Raspberry Pi."
 echo "     If the USB Accelerator is already connected, unplug it and plug it back in."
-echo "  3. `bash ${REPO_NAME}/run_demo.sh`
+echo "  3. Download our models and run a test with this command:"
+echo "     bash ${REPO_NAME}/run_demo.sh"
 echo
