@@ -1,4 +1,3 @@
-# Lint as: python3
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from aiy.coral import vision
+
+from coralkit import vision
 from pycoral.adapters.detect import BBox
 
 pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
 
-# Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
     pose = pose_detector.get_pose(frame)
     vision.draw_pose(frame, pose)
-    

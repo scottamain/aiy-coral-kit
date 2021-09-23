@@ -1,4 +1,3 @@
-# Lint as: python3
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +14,11 @@
 """MoveNet pose classification example.
 
 You must first complete the Google Colab to train the pose classification model:
-https://colab.sandbox.google.com/github/tensorflow/tensorflow/blob/master/tensorflow/lite/g3doc/tutorials/pose_classification.ipynb
+https://g.co/coral/train-poses
+And save the Colab's .tflite and .txt output files into the "models" directory.
 """
 
-from aiy.coral import vision
+from coralkit import vision
 from pycoral.utils.dataset import read_label_file
 
 MOVENET_CLASSIFY_MODEL='models/pose_classifier.tflite'
@@ -28,12 +28,10 @@ pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
 pose_classifier = vision.PoseClassifier(MOVENET_CLASSIFY_MODEL)
 labels = read_label_file(MOVENET_CLASSIFY_LABELS)
 
-# Run a loop to get images and process them in real-time
 for frame in vision.get_frames():
     # Detect the body points and draw the skeleton
     pose = pose_detector.get_pose(frame)
     vision.draw_pose(frame, pose)
-    # Classify different yoga poses
-    label_id = pose_classifier.get_pose_type(pose)
+    # Classify different body poses
+    label_id = pose_classifier.get_class(pose)
     vision.draw_label(frame, labels.get(label_id))
-    

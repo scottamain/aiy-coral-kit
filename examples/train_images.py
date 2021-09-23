@@ -13,13 +13,14 @@
 # limitations under the License.
 
 """
-Retrains an image classification model to learn new classifications.
+Capture images:
+  python3 collect_images.py -l my-labels.txt
 
-First capture your images:
-  python3 collect_images.py -l labels.txt
+Train new model using captured images (THIS SCRIPT):
+  python3 train_images.py -l my-labels.txt
 
-Then retrain the model using the captured images:
-  python3 train_images.py -l labels.txt
+Run the model:
+  python3 classify_image.py -m my-model.tflite -l my-labels.txt
 """
 
 import argparse
@@ -31,8 +32,10 @@ from pycoral.adapters import classify
 from pycoral.adapters import common
 from pycoral.learn.imprinting.engine import ImprintingEngine
 from pycoral.utils.edgetpu import make_interpreter
+
 from pycoral.utils.dataset import read_label_file
-from aiy.coral import vision
+
+DEFAULT_BASE_MODEL = 'models/mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite'
 
 def read_image(path, shape):
   with Image.open(path) as img:
@@ -64,16 +67,17 @@ def main():
   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('--labels', '-l', type=str, required=True,
                       help='Labels file')
-  parser.add_argument('--captures_dir', '-d', type=str, default='captures',
-                      help='Directory with your training images')
-  parser.add_argument('--model', '-m', type=str, default=vision.CLASSIFICATION_IMPRINTING_MODEL,
-                      help='The base model upon which to add new classifications')
+  parser.add_argument('--capture_dir', '-d', type=str, default='capture',
+                      help='Capture directory')
+  parser.add_argument('--model', '-m', type=str, default=DEFAULT_BASE_MODEL,
+                      help='Base model')
   parser.add_argument('--out_model', '-om', type=str, default='my-model.tflite',
                       help='Output model')
   args = parser.parse_args()
 
   labels = read_label_file(args.labels)
-  train(args.captures_dir, labels, args.model, args.out_model)
+  train(args.capture_dir, labels, args.model, args.out_model)
 
 if __name__ == '__main__':
   main()
+

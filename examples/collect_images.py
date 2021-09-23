@@ -24,7 +24,7 @@ import tty
 from datetime import datetime
 from time import time
 
-from aiy.coral import vision
+from coralkit import vision
 
 from pycoral.utils.dataset import read_label_file
 
@@ -69,7 +69,7 @@ def save_frame(request):
   filename, frame = request
   vision.save_frame(filename, frame)
   print('Saved: %s' % filename)
-  
+
 def print_help(labels):
   print("Press buttons '0' .. '9' to save images from the camera.")
   if labels:
@@ -122,8 +122,8 @@ def main():
     continuous_active = False
 
     for frame, key in vision.get_frames(handle_key=handle_key,
-                                   capture_device_index=args.capture_device_index,
-                                   return_key=True):
+                                        capture_device_index=args.capture_device_index,
+                                        return_key=True):
       # Handle continous capture mode
       if args.continuous:
         if key is not None and (ord('0') <= key <= ord('9')):

@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# Download models, labels, and inputs for example code
-#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEST_DATA_URL="https://github.com/google-coral/test_data/raw/master/"
 readonly MODEL_DIR="${SCRIPT_DIR}/models"
 
+if [[ $(python3 -m pip list | grep coralkit) == '' ]]; then
+  python3 -m pip install ${SCRIPT_DIR}/coralkit
+else
+  echo 'coralkit is already installed.'
+fi
+
 if [ -d "${MODEL_DIR}" ]; then
   echo "Models directory exists. Skipping downloads."
-  exit
+  exit 1
 fi
 
 mkdir -p "${MODEL_DIR}"

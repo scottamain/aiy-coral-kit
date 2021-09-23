@@ -21,7 +21,7 @@ import tty
 
 from cv2 import imread
 from pycoral.utils.dataset import read_label_file
-from aiy.coral import vision
+from coralkit import vision
 
 classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
 labels = read_label_file(vision.CLASSIFICATION_LABELS)
@@ -58,7 +58,11 @@ def classify_live():
         return False  # Quit the program
       return True  # Keep the camera alive, wait for keys
 
+    first_pass = True
     for frame in vision.get_frames(handle_key=handle_key):
+      if first_pass:
+        print('Press the spacebar to capture and classify an image from your camera.')
+        first_pass = False
       # Handle key events from console.
       ch = get_char()
       if ch is not None and not handle_key(ord(ch), frame):
@@ -90,4 +94,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-

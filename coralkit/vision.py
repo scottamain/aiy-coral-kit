@@ -56,7 +56,7 @@ def make_interpreter(model_file):
 #########################
 
 class KeypointType(enum.IntEnum):
-    """Pose kepoints."""
+    """Pose keypoints in COCO-style format."""
     NOSE = 0
     LEFT_EYE = 1
     RIGHT_EYE = 2
@@ -98,25 +98,55 @@ KEYPOINT_EDGES = (
 )
 
 class PoseDetector:
+  """Performs inferencing with a pose detection model such as MoveNet.
+
+  Args:
+    model: Path to a ``.tflite`` file (compiled for the Edge TPU).
+  """
   def __init__(self, model):
     self.interpreter = make_interpreter(model)
     self.interpreter.allocate_tensors()
-    
-  def get_pose(self, frame, threshold=0.01):
+
+  def get_pose(self, frame):
+    """
+    Gets the keypoint pose data for one person.
+
+    Args:
+      frame: The bitmap image to pass through the model.
+
+    Returns:
+      The COCO-style keypoint results, reshaped to [17, 3], in which each keypoint
+      has [y, x, score].
+    """
     resized_img = cv2.resize(frame, common.input_size(self.interpreter),
                              fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
     common.set_input(self.interpreter, resized_img)
     self.interpreter.invoke()
-    pose = common.output_tensor(self.interpreter, 0).copy().reshape(len(KeypointType), 3)
-    return pose
-    
+    return common.output_tensor(self.interpreter, 0).copy().reshape(len(KeypointType), 3)
+
 
 class PoseClassifier:
+  """Performs pose classification with a model from
+  `g.co/coral/train-poses <https://g.co/coral/train-poses>`_.
+
+  Args:
+    model: Path to a ``.tflite`` file.
+  """
   def __init__(self, model):
     self.interpreter = tflite.Interpreter(model_path=model)
     self.interpreter.allocate_tensors()
-    
-  def get_pose_type(self, keypoints, threshold=0.01):
+
+  def get_class(self, keypoints, threshold=0.01):
+    """
+    Gets the top pose classification result.
+
+    Args:
+      keypoints: The COCO-style pose keypoints, as output from a pose detection model.
+      threshold: The minimum confidence score for the returned classification.
+
+    Returns:
+      The class id for the top result.
+    """
     # Reshape input for classify model
     keypoints = keypoints.flatten().reshape(1,51)
     input_index = self.interpreter.get_input_details()[0]["index"]
@@ -124,14 +154,23 @@ class PoseClassifier:
     self.interpreter.set_tensor(input_index, keypoints)
     self.interpreter.invoke()
     output = self.interpreter.tensor(output_index)
-    predicted_label = np.argmax(output()[0])
-    return predicted_label
+    return np.argmax(output()[0])
 
 def get_keypoint_types(frame, keypoints, threshold=0.01):
-  """Converts keypoint data into dictionary with values scaled for the image size."""
+  """Converts keypoint data into dictionary with values scaled for the image size.
+
+  Args:
+    frame: The original image used for pose detection.
+    keypoints: The COCO-style pose keypoints, as output from a pose detection model.
+    threshold: The minimum confidence score for returned results.
+
+  Returns:
+    A dictionary with an item for every body keypoint detected above the given threshold,
+    wherein each key is the :obj:`KeypointType` and the value is a tuple for its (x,y) location.
+  """
   height, width, _ = frame.shape
   points = {}
-  for i in range(0, len(KeypointType)):
+  for i in range(len(KeypointType)):
     score = keypoints[i][2]
     if score > threshold:
       y = int(keypoints[i][0] * height)
@@ -139,25 +178,11 @@ def get_keypoint_types(frame, keypoints, threshold=0.01):
       points[i] = (x, y)
   return points
 
-def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
-  """Draws the pose skeleton on the image."""
-  # Get the structured keypoint types
-  points = get_keypoint_types(frame, keypoints, threshold)
-  # Draw all points (that have scores greater than the threshold)
-  for i in points:
-    x, y = points[i]
-    cv2.circle(frame, (x,y), radius=circle_radius, color=color, thickness=-1)
-  # Draw lines between points if both point pairs are found
-  for a, b in KEYPOINT_EDGES:
-    if a in points and b in points:
-      cv2.line(frame, points[a], points[b], color, thickness=line_thickness)
-  return points
-
 class Detector:
   """Performs inferencing with an object detection model.
 
   Args:
-    model: Path to a `.tflite` file (compiled for the Edge TPU). Must be an SSD model.
+    model: Path to a ``.tflite`` file (compiled for the Edge TPU). Must be an SSD model.
   """
   def __init__(self, model):
     self.interpreter = make_interpreter(model)
@@ -172,9 +197,8 @@ class Detector:
       threshold: The minimum confidence score for returned results.
 
     Returns:
-      A list of `Object` objects, each of which contains a detected object's
-      id, score, and bounding box as `BBox`.
-      See https://coral.ai/docs/reference/py/pycoral.adapters/#pycoral.adapters.detect.Object
+      A list of |Object|_ objects, each of which contains a detected object's id, score,
+      and bounding box as |BBox|_ .
     """
     height, width, _ = frame.shape
     _, scale = common.set_resized_input(self.interpreter, (width, height),
@@ -187,7 +211,7 @@ class Classifier:
   """Performs inferencing with an image classification model.
 
   Args:
-    model: Path to a `.tflite` file (compiled for the Edge TPU). Must be a classification model.
+    model: Path to a ``.tflite`` file (compiled for the Edge TPU).
   """
   def __init__(self, model):
     self.interpreter = make_interpreter(model)
@@ -203,8 +227,7 @@ class Classifier:
       threshold: The minimum confidence score for returned results.
 
     Returns:
-      A list of `Class` objects representing the classification results, ordered by scores.
-      See https://coral.ai/docs/reference/py/pycoral.adapters/#pycoral.adapters.classify.Class
+      A list of |Class|_ objects representing the classification results, ordered by scores.
     """
     size = common.input_size(self.interpreter)
     common.set_input(self.interpreter, cv2.resize(frame, size, fx=0, fy=0, interpolation = cv2.INTER_CUBIC))
@@ -215,15 +238,30 @@ class Classifier:
 ### CAMERA & DISPLAY APIS ###
 #############################
 
-def draw_objects(frame, objs, labels=None, color=CORAL_COLOR, thickness=5):
+def draw_classes(frame, classes, labels, color=CORAL_COLOR):
   """
-  Draws bounding boxes for detected objects on the display output.
+  Draws image classification names on the display image.
 
   Args:
-    frame: The bitmap frame to draw upon.
-    objs: A list of `Object` objects for which you want to draw bounding boxes on the frame.
+    frame: The bitmap image to draw upon.
+    classes: A list of |Class|_  objects representing the classified objects.
+    labels: The labels file corresponding to model used for image classification.
+    color: The BGR color to use for the text.
+  """
+  for index, score in classes:
+    label = '%s (%.2f)' % (labels.get(index, 'n/a'), score)
+    cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
+
+
+def draw_objects(frame, objs, labels=None, color=CORAL_COLOR, thickness=5):
+  """
+  Draws bounding boxes for detected objects on the display image.
+
+  Args:
+    frame: The bitmap image to draw upon.
+    objs: A list of |Object|_ objects for which you want to draw bounding boxes on the frame.
     labels: The labels file corresponding to the model used for object detection.
-    color: The RGB color to use for the bounding box.
+    color: The BGR color to use for the bounding box.
     thickness: The bounding box pixel thickness.
   """
   for obj in objs:
@@ -233,54 +271,88 @@ def draw_objects(frame, objs, labels=None, color=CORAL_COLOR, thickness=5):
       cv2.putText(frame, labels.get(obj.id), (bbox.xmin + thickness, bbox.ymax - thickness),
                   fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=CORAL_COLOR, thickness=2)
 
+
+def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR, circle_radius=5, line_thickness=2):
+  """Draws the pose skeleton on the image sent to the display and returns structured keypoints.
+
+  Args:
+    frame: The bitmap image to draw upon.
+    keypoints: The COCO-style pose keypoints, as output from a pose detection model.
+    threshold: The minimum confidence score for returned keypoint data.
+    color: The BGR color to use for the bounding box.
+    circle_radius: The radius size of each keypoint dot.
+    line_thickness: The pixel thickness for lines connecting the keypoint dots.
+
+  Returns:
+    A dictionary with an item for every body keypoint that is detected above the given threshold,
+    wherein each key is the :obj:`KeypointType` and the value is at tuple for its (x,y) location.
+    (Exactly the same return as :func:`get_keypoint_types()`.)
+  """
+  # Get the structured keypoint types
+  points = get_keypoint_types(frame, keypoints, threshold)
+  # Draw all points (that have scores greater than the threshold)
+  for point in points.values():
+    cv2.circle(frame, point, radius=circle_radius, color=color, thickness=-1)
+  # Draw lines between points if both point pairs are found
+  for a, b in KEYPOINT_EDGES:
+    if a in points and b in points:
+      cv2.line(frame, points[a], points[b], color, thickness=line_thickness)
+  return points
+
+def draw_label(frame, label, color=CORAL_COLOR):
+  """
+  Draws a text label on the image sent to the display.
+
+  Args:
+    frame: The bitmap image to draw upon.
+    label: The string to write.
+    color: The BGR color for the text.
+  """
+  cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
+
+
 def draw_circle(frame, point, radius, color=CORAL_COLOR, thickness=5):
-  """Draws a circle onto the frame."""
+  """Draws a circle onto the image sent to the display.
+
+  Args:
+    frame: The bitmap image to draw upon.
+    point: An (x, y) tuple specifying the circle center.
+    radius: The radius size of the circle.
+    color: The BGR color to use.
+    thickness: The circle's pixel thickness. Set to -1 to fill the circle.
+  """
   cv2.circle(frame, point, radius, color, thickness)
 
 
 def draw_rect(frame, bbox, color=BLUE, thickness=5):
-  """Draws a rectangle onto the frame."""
+  """Draws a rectangle onto the image sent to the display.
+
+  Args:
+    frame: The bitmap image to draw upon.
+    bbox: A |BBox|_  object.
+    color: The BGR color to use.
+    thickness: The box pixel thickness. Set to -1 to fill the box."""
   cv2.rectangle(frame, (bbox.xmin, bbox.ymin), (bbox.xmax, bbox.ymax), color, thickness)
 
 
-def draw_classes(frame, classes, labels, color=CORAL_COLOR):
-  """
-  Draws the image classification name on the display output.
-
-  Args:
-    frame: The bitmap frame to draw upon.
-    classes: A list of `Class` objects representing the classified objects.
-    labels: The labels file corresponding to model used for image classification.
-    color: The RGB color to use for the text.
-  """
-  for index, score in classes:
-    label = '%s (%.2f)' % (labels.get(index, 'n/a'), score)
-    cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
-
-
-def draw_label(frame, label, color=CORAL_COLOR):
-  """
-  Draws a text label on the display output.
-
-  Args:
-    frame: The bitmap frame to draw upon.
-    labels: The string to write.
-    color: The RGB color to use for the text.
-  """
-  cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
-
-def get_frames(title='Raspimon camera', size=VIDEO_SIZE, handle_key=None,
+def get_frames(title='Camera', size=VIDEO_SIZE, handle_key=None,
                capture_device_index=0, mirror=True, return_key=False):
   """
-  Gets a stream of image frames from the default camera.
+  Gets a stream of image frames from the camera.
 
   Args:
     title: A title for the display window.
     size: The image resolution for all frames, as a tuple (x, y).
     handle_key: A callback function that accepts arguments (key, frame) for a key event and
       the image frame from the moment the key was pressed.
+    capture_device_index: The Linux device ID for the camera.
+    mirror: Whether to flip the image horizontally (set True for a selfie view).
+    return_key: Whether to also return any key presses. If True, the function returns a tuple with
+      (frame, key) instead of just the frame.
+
   Returns:
-    An iterator that yields each image frame from the default camera.
+    An iterator that yields each image frame from the default camera. Or a tuple if ``return_key``
+    is True.
   """
   width, height = size
 
@@ -338,4 +410,3 @@ def save_frame(filename, frame):
   """
   os.makedirs(os.path.dirname(filename), exist_ok=True)
   cv2.imwrite(filename, frame)
-
