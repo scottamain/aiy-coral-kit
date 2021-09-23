@@ -18,54 +18,61 @@ import sys
 import time
 import traceback
 from coralkit import vision
+from examples import models
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
+
 def usb_accelerator_connected():
-  if subprocess.run(["lsusb", "-d", "18d1:9302"], capture_output=True).returncode == 0:
-    return True
-  if subprocess.run(["lsusb", "-d", "1a6e:089a"], capture_output=True).returncode == 0:
-    return True
-  return False
+    if subprocess.run(["lsusb", "-d", "18d1:9302"],
+                      capture_output=True).returncode == 0:
+        return True
+    if subprocess.run(["lsusb", "-d", "1a6e:089a"],
+                      capture_output=True).returncode == 0:
+        return True
+    return False
 
 
 def main():
-  print('--- Checking required files ---')
-  if not os.path.isfile(vision.CLASSIFICATION_MODEL):
-    print('Downloading files...')
-    subprocess.call(["bash", os.path.join(SCRIPT_DIR, 'install_requirements.sh')])
-  print("Files okay.\n")
+    print('--- Checking required files ---')
+    if not os.path.isfile(models.CLASSIFICATION_MODEL):
+        print('Downloading files...')
+        subprocess.call(["bash", os.path.join(
+            SCRIPT_DIR, 'examples', 'install_requirements.sh')])
+    print("Files okay.\n")
 
-  print('--- Testing camera ---')
-  TIME_LIMIT = 4
-  start = time.monotonic()
-  for frame in vision.get_frames():
-    elapsed = int(time.monotonic() - start)
-    print('Closing video in...', TIME_LIMIT - elapsed, end='\r')
-    if (elapsed >= TIME_LIMIT):
-      print('\nCamera okay.\n')
-      break
+    print('--- Testing camera ---')
+    TIME_LIMIT = 4
+    start = time.monotonic()
+    for frame in vision.get_frames():
+        elapsed = int(time.monotonic() - start)
+        print('Closing video in...', TIME_LIMIT - elapsed, end='\r')
+        if (elapsed >= TIME_LIMIT):
+            print('\nCamera okay.\n')
+            break
 
-  print('--- Testing USB Accelerator ---')
-  if not usb_accelerator_connected():
-    print('Coral USB Accelerator NOT found!')
-    print('Make sure it\'s connected to the Raspberry Pi.')
-    return 1
+    print('--- Testing USB Accelerator ---')
+    if not usb_accelerator_connected():
+        print('Coral USB Accelerator NOT found!')
+        print('Make sure it\'s connected to the Raspberry Pi.')
+        return 1
 
-  print('Loading a model...')
-  try:
-    classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
-    classes = classifier.get_classes(frame)
-    if classes:
-      print('USB Accelerator okay.')
-  except ValueError:
-    traceback.print_exc()
-    print('Something went wrong.')
-    print('Try unplugging the USB Accelerator, then plug it back in and run the script again.')
-    return 1
+    print('Loading a model...')
+    try:
+        classifier = vision.Classifier(models.CLASSIFICATION_MODEL)
+        classes = classifier.get_classes(frame)
+        if classes:
+            print('USB Accelerator okay.')
+    except ValueError:
+        traceback.print_exc()
+        print('Something went wrong.')
+        print(
+            'Try unplugging the USB Accelerator, then plug it back in and run the script again.')
+        return 1
 
-  print('\nAll tests complete.')
-  return 0
+    print('\nAll tests complete.')
+    return 0
+
 
 if __name__ == '__main__':
-  sys.exit(main())
+    sys.exit(main())

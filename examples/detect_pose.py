@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from coralkit import vision
 from pycoral.adapters.detect import BBox
+from coralkit import vision
+import models
 
-pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
+pose_detector = vision.PoseDetector(models.MOVENET_MODEL)
 
 for frame in vision.get_frames():
     pose = pose_detector.get_pose(frame)

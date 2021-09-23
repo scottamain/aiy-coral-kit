@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from coralkit import vision
+import models
 
-detector = vision.Detector(vision.FACE_DETECTION_MODEL)
+detector = vision.Detector(models.FACE_DETECTION_MODEL)
 
 for frame in vision.get_frames():
     faces = detector.get_objects(frame, threshold=0.1)

@@ -18,13 +18,13 @@ import select
 import sys
 import termios
 import tty
-
 from cv2 import imread
 from pycoral.utils.dataset import read_label_file
 from coralkit import vision
+import models
 
-classifier = vision.Classifier(vision.CLASSIFICATION_MODEL)
-labels = read_label_file(vision.CLASSIFICATION_LABELS)
+classifier = vision.Classifier(models.CLASSIFICATION_MODEL)
+labels = read_label_file(models.CLASSIFICATION_LABELS)
 
 @contextlib.contextmanager
 def nonblocking(f):

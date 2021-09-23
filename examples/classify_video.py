@@ -15,11 +15,12 @@
 import argparse
 from pycoral.utils.dataset import read_label_file
 from coralkit import vision
+import models
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-m', '--model', default=vision.CLASSIFICATION_MODEL,
+parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
                     help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
-parser.add_argument('-l', '--labels', default=vision.CLASSIFICATION_LABELS,
+parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,
                     help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
 args = parser.parse_args()
 

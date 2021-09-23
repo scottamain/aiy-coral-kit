@@ -31,21 +31,6 @@ _EDGETPU_SHARED_LIB = {
     'Windows': 'edgetpu.dll'
 }[platform.system()]
 
-PATH = os.path.dirname(os.path.realpath(__file__))
-FACE_DETECTION_MODEL = os.path.join(PATH, 'models',
-                                    'ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite')
-OBJECT_DETECTION_MODEL = os.path.join(PATH, 'models',
-                                      'ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
-CLASSIFICATION_MODEL = os.path.join(PATH, 'models',
-                                    'tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite')
-CLASSIFICATION_IMPRINTING_MODEL = os.path.join(PATH, 'models',
-                                               'mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite')
-MOVENET_MODEL = os.path.join(PATH, 'models',
-                             'movenet_single_pose_lightning_ptq_edgetpu.tflite')
-
-CLASSIFICATION_LABELS = os.path.join(PATH, 'models', 'imagenet_labels.txt')
-OBJECT_DETECTION_LABELS = os.path.join(PATH, 'models', 'coco_labels.txt')
-
 VIDEO_SIZE = (640, 480)
 CORAL_COLOR = (86, 104, 237)
 BLUE = (255, 0, 0)  # BGR (not RGB)
@@ -55,9 +40,8 @@ def make_interpreter(model_file):
     model_file, *device = model_file.split('@')
     return tflite.Interpreter(
         model_path=model_file,
-        experimental_delegates=[tflite.load_delegate(_EDGETPU_SHARED_LIB,
-                                                     {'device': device[
-                                                         0]} if device else {})])
+        experimental_delegates=[tflite.load_delegate(
+            _EDGETPU_SHARED_LIB, {'device': device[0]} if device else {})])
 
 
 #########################

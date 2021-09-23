@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from coralkit import vision
 from pycoral.utils.dataset import read_label_file
+from coralkit import vision
+import models
 
-detector = vision.Detector(vision.OBJECT_DETECTION_MODEL)
-labels = read_label_file(vision.OBJECT_DETECTION_LABELS)
+detector = vision.Detector(models.OBJECT_DETECTION_MODEL)
+labels = read_label_file(models.OBJECT_DETECTION_LABELS)
 
 for frame in vision.get_frames():
     objects = detector.get_objects(frame, threshold=0.4)

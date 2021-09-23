@@ -20,11 +20,12 @@ And save the Colab's .tflite and .txt output files into the "models" directory.
 
 from coralkit import vision
 from pycoral.utils.dataset import read_label_file
+import models
 
-MOVENET_CLASSIFY_MODEL='models/pose_classifier.tflite'
-MOVENET_CLASSIFY_LABELS='models/pose_labels.txt'
+MOVENET_CLASSIFY_MODEL = 'models/pose_classifier.tflite'
+MOVENET_CLASSIFY_LABELS = 'models/pose_labels.txt'
 
-pose_detector = vision.PoseDetector(vision.MOVENET_MODEL)
+pose_detector = vision.PoseDetector(models.MOVENET_MODEL)
 pose_classifier = vision.PoseClassifier(MOVENET_CLASSIFY_MODEL)
 labels = read_label_file(MOVENET_CLASSIFY_LABELS)
 

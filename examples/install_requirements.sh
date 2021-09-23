@@ -18,15 +18,11 @@ set -e
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEST_DATA_URL="https://github.com/google-coral/test_data/raw/master/"
-readonly MODEL_DIR="${SCRIPT_DIR}/coralkit/models"
+readonly MODEL_DIR="${SCRIPT_DIR}/models"
 
-if [[ $(python3 -m pip list | grep coralkit) == '' ]]; then
-  python3 -m pip install ${SCRIPT_DIR}
-else
-  echo 'coralkit is already installed.'
-fi
+python3 -m pip install ${SCRIPT_DIR}/..
 
-if [ -d "${MODEL_DIR}" ]; then
+if [[ -d "${MODEL_DIR}" ]]; then
   echo "Models directory exists. Skipping downloads."
   exit 1
 fi

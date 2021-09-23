@@ -48,7 +48,7 @@ setup(
   version=find_version(read('coralkit/__init__.py')),
   author='Coral',
   author_email='coral-support@google.com',
-  url='https://github.com/google-coral/coral-kit',
+  url='https://github.com/google-coral/coralkit',
   packages=['coralkit'],
   install_requires=['pycoral>=2.0.0'],
 )

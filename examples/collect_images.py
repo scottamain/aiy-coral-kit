@@ -23,10 +23,8 @@ import threading
 import tty
 from datetime import datetime
 from time import time
-
-from coralkit import vision
-
 from pycoral.utils.dataset import read_label_file
+from coralkit import vision
 
 @contextlib.contextmanager
 def nonblocking(f):

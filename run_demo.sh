@@ -17,7 +17,7 @@ set -e
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-bash ${SCRIPT_DIR}/install_requirements.sh
+bash ${SCRIPT_DIR}/examples/install_requirements.sh
 
 if [[ ! $DISPLAY ]]; then
   echo "ERROR: No display detected. This demo requires a desktop display."
@@ -51,4 +51,4 @@ while true; do
 done
 
 echo
-echo "See more demos in ${SCRIPT_DIR}/."
+echo "See more demos in ${SCRIPT_DIR}/examples/."
