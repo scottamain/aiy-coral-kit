@@ -21,7 +21,7 @@ readonly TEST_DATA_URL="https://github.com/google-coral/test_data/raw/master/"
 readonly MODEL_DIR="${SCRIPT_DIR}/models"
 
 if [[ $(python3 -m pip list | grep coralkit) == '' ]]; then
-  python3 -m pip install ${SCRIPT_DIR}/coralkit
+  python3 -m pip install ${SCRIPT_DIR}
 else
   echo 'coralkit is already installed.'
 fi
