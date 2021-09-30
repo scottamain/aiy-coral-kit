@@ -24,24 +24,13 @@ import tflite_runtime.interpreter as tflite
 from pycoral.adapters import common
 from pycoral.adapters import classify
 from pycoral.adapters import detect
+from pycoral.utils import edgetpu
 
-_EDGETPU_SHARED_LIB = {
-    'Linux': 'libedgetpu.so.1',
-    'Darwin': 'libedgetpu.1.dylib',
-    'Windows': 'edgetpu.dll'
-}[platform.system()]
+_POSENET_SHARED_LIB = os.path.join('/usr/lib', 'posenet_decoder.so')
 
 VIDEO_SIZE = (640, 480)
 CORAL_COLOR = (86, 104, 237)
 BLUE = (255, 0, 0)  # BGR (not RGB)
-
-
-def make_interpreter(model_file):
-    model_file, *device = model_file.split('@')
-    return tflite.Interpreter(
-        model_path=model_file,
-        experimental_delegates=[tflite.load_delegate(
-            _EDGETPU_SHARED_LIB, {'device': device[0]} if device else {})])
 
 
 #########################
@@ -99,8 +88,13 @@ class PoseDetector:
       model: Path to a ``.tflite`` file (compiled for the Edge TPU).
     """
 
-    def __init__(self, model):
-        self.interpreter = make_interpreter(model)
+    def __init__(self, model, posenet=False):
+        self.posenet = False
+        delegates = [edgetpu.load_edgetpu_delegate()]
+        if posenet:
+            self.posenet = True
+            delegates.append(tflite.load_delegate(_POSENET_SHARED_LIB))
+        self.interpreter = tflite.Interpreter(model_path=model, experimental_delegates=delegates)
         self.interpreter.allocate_tensors()
 
     def get_pose(self, frame):
@@ -114,12 +108,34 @@ class PoseDetector:
           The COCO-style keypoint results, reshaped to [17, 3], in which each keypoint
           has [y, x, score].
         """
+        if self.posenet:
+            return get_poses(frame)[0] # TODO: Drop the pose score
         resized_img = cv2.resize(frame, common.input_size(self.interpreter),
                                  fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
         common.set_input(self.interpreter, resized_img)
         self.interpreter.invoke()
         return common.output_tensor(self.interpreter, 0).copy().reshape(
             len(KeypointType), 3)
+
+    def get_poses(self, frame):
+        if not self.posenet:
+            raise Exception("get_poses() is compatible with PoseNet models only.")
+        resized_img = cv2.resize(frame, common.input_size(self.interpreter),
+                                 fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
+        common.set_input(self.interpreter, resized_img)
+        self.interpreter.invoke()
+        all_keypoints = np.squeeze(common.output_tensor(self.interpreter, 0))
+        keypoint_scores = np.squeeze(common.output_tensor(self.interpreter, 1))
+        pose_scores = np.squeeze(common.output_tensor(self.interpreter, 2))
+        num_poses = np.squeeze(common.output_tensor(self.interpreter, 3))
+        poses = []
+        for i in range(int(num_poses)):
+            keypoints = []
+            for j, point in enumerate(all_keypoints[i]):
+                keypoint = [point[0], point[1], keypoint_scores[i][j]]
+                keypoints.append(keypoint)
+            poses.append([pose_scores[i], keypoints])
+        return poses
 
 
 class PoseClassifier:
@@ -172,8 +188,8 @@ def get_keypoint_types(frame, keypoints, threshold=0.01):
     for i in range(len(KeypointType)):
         score = keypoints[i][2]
         if score > threshold:
-            y = int(keypoints[i][0] * height)
-            x = int(keypoints[i][1] * width)
+            y = int(keypoints[i][0])
+            x = int(keypoints[i][1])
             points[i] = (x, y)
     return points
 
@@ -186,7 +202,7 @@ class Detector:
     """
 
     def __init__(self, model):
-        self.interpreter = make_interpreter(model)
+        self.interpreter = edgetpu.make_interpreter(model)
         self.interpreter.allocate_tensors()
 
     def get_objects(self, frame, threshold=0.01):
@@ -218,7 +234,7 @@ class Classifier:
     """
 
     def __init__(self, model):
-        self.interpreter = make_interpreter(model)
+        self.interpreter = edgetpu.make_interpreter(model)
         self.interpreter.allocate_tensors()
 
     def get_classes(self, frame, top_k=1, threshold=0.0):
@@ -288,7 +304,7 @@ def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR,
 
     Args:
       frame: The bitmap image to draw upon.
-      keypoints: The COCO-style pose keypoints, as output from a pose detection model.
+      keypoints: The COCO-style pose keypoints, as given by :func:`PoseDetector.get_pose()`.
       threshold: The minimum confidence score for returned keypoint data.
       color: The BGR color to use for the bounding box.
       circle_radius: The radius size of each keypoint dot.
@@ -301,6 +317,7 @@ def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR,
     """
     # Get the structured keypoint types
     points = get_keypoint_types(frame, keypoints, threshold)
+    print('points:', points)
     # Draw all points (that have scores greater than the threshold)
     for point in points.values():
         cv2.circle(frame, point, radius=circle_radius, color=color,
@@ -429,3 +446,4 @@ def save_frame(filename, frame):
     """
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     cv2.imwrite(filename, frame)
+
