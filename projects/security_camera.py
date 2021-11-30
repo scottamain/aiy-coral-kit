@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from coralkit import vision
+from aiymakerkit import vision
 from pycoral.adapters.detect import BBox
 from pycoral.utils.dataset import read_label_file
 
@@ -54,7 +54,8 @@ for frame in vision.get_frames():
             # Check if more than 30% of the person is in the fence,
             # OR if more than 50% of the fence is obscured by the object
             # (such as if the person is very close to the camera)
-            if (overlap_area / person_area) > 0.3 or (overlap_area / fence_area) > 0.5:
+            if (overlap_area / person_area) > 0.3 or (
+                    overlap_area / fence_area) > 0.5:
                 # They are in the fence; draw their box red
                 vision.draw_rect(frame, obj.bbox, color=RED)
             else:

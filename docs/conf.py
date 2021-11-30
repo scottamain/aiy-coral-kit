@@ -39,7 +39,7 @@ sys.modules.update([('tflite_runtime.interpreter', unittest.mock.MagicMock())])
 
 # -- Project information -----------------------------------------------------
 
-project = 'CoralKit API'
+project = 'AIY Maker Kit API'
 copyright = '2021, Google LLC'
 author = 'Google LLC'
 

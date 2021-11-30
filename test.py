@@ -17,7 +17,7 @@ import subprocess
 import sys
 import time
 import traceback
-from coralkit import vision
+from aiymakerkit import vision
 from examples import models
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))

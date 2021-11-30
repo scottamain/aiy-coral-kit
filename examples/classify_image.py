@@ -20,77 +20,83 @@ import termios
 import tty
 from cv2 import imread
 from pycoral.utils.dataset import read_label_file
-from coralkit import vision
+from aiymakerkit import vision
 import models
 
 classifier = vision.Classifier(models.CLASSIFICATION_MODEL)
 labels = read_label_file(models.CLASSIFICATION_LABELS)
 
+
 @contextlib.contextmanager
 def nonblocking(f):
-  def get_char():
-    if select.select([f], [], [], 0) == ([f], [], []):
-      return sys.stdin.read(1)
-    return None
+    def get_char():
+        if select.select([f], [], [], 0) == ([f], [], []):
+            return sys.stdin.read(1)
+        return None
 
-  old_settings = termios.tcgetattr(sys.stdin)
-  try:
-    tty.setcbreak(f.fileno())
-    yield get_char
-  finally:
-    termios.tcsetattr(f, termios.TCSADRAIN, old_settings)
+    old_settings = termios.tcgetattr(sys.stdin)
+    try:
+        tty.setcbreak(f.fileno())
+        yield get_char
+    finally:
+        termios.tcsetattr(f, termios.TCSADRAIN, old_settings)
+
 
 def classify_image(frame):
-  classes = classifier.get_classes(frame)
-  label_id = classes[0].id
-  score = classes[0].score
-  label = labels.get(label_id)
-  print(label, score)
-  return classes
+    classes = classifier.get_classes(frame)
+    label_id = classes[0].id
+    score = classes[0].score
+    label = labels.get(label_id)
+    print(label, score)
+    return classes
+
 
 def classify_live():
-  with nonblocking(sys.stdin) as get_char:
-    # Handle key events from GUI window.
-    def handle_key(key, frame):
-      if key == 32: # Spacebar
-        classify_image(frame)
-      if key == ord('q') or key == ord('Q'):
-        return False  # Quit the program
-      return True  # Keep the camera alive, wait for keys
+    with nonblocking(sys.stdin) as get_char:
+        # Handle key events from GUI window.
+        def handle_key(key, frame):
+            if key == 32:  # Spacebar
+                classify_image(frame)
+            if key == ord('q') or key == ord('Q'):
+                return False  # Quit the program
+            return True  # Keep the camera alive, wait for keys
 
-    first_pass = True
-    for frame in vision.get_frames(handle_key=handle_key):
-      if first_pass:
-        print('Press the spacebar to capture and classify an image from your camera.')
-        first_pass = False
-      # Handle key events from console.
-      ch = get_char()
-      if ch is not None and not handle_key(ord(ch), frame):
-        break
+        first_pass = True
+        for frame in vision.get_frames(handle_key=handle_key):
+            if first_pass:
+                print(
+                    'Press the spacebar to capture and classify an image from your camera.')
+                first_pass = False
+            # Handle key events from console.
+            ch = get_char()
+            if ch is not None and not handle_key(ord(ch), frame):
+                break
+
 
 def main():
-  global classifier, labels
-  parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('-m', '--model',
-                      help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
-  parser.add_argument('-l', '--labels',
-                      help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
-  parser.add_argument('-i', '--input',
-                      help='Image to be classified. If not given, use spacebar to capture and classify an image.')
-  args = parser.parse_args()
+    global classifier, labels
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-m', '--model',
+                        help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
+    parser.add_argument('-l', '--labels',
+                        help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
+    parser.add_argument('-i', '--input',
+                        help='Image to be classified. If not given, use spacebar to capture and classify an image.')
+    args = parser.parse_args()
 
-  if args.model:
-    classifier = vision.Classifier(args.model)
+    if args.model:
+        classifier = vision.Classifier(args.model)
 
-  if args.labels:
-    labels = read_label_file(args.labels)
+    if args.labels:
+        labels = read_label_file(args.labels)
 
-  if args.input:
-    frame = imread(args.input)
-    classify_image(frame)
-  else:
-    classify_live()
+    if args.input:
+        frame = imread(args.input)
+        classify_image(frame)
+    else:
+        classify_live()
 
 
 if __name__ == '__main__':
-  main()
+    main()

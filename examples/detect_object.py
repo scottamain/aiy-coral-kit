@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pycoral.utils.dataset import read_label_file
-from coralkit import vision
+from aiymakerkit import vision
 import models
 
 detector = vision.Detector(models.OBJECT_DETECTION_MODEL)

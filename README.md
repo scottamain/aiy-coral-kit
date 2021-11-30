@@ -1,6 +1,6 @@
-# Coral Kit API and examples
+# AIY Maker Kit API and examples
 
-The `coralkit` Python APIs in this repo greatly simplify the amount of code
+The `aiymakerkit` Python APIs in this repo greatly simplify the amount of code
 required to perform common operations with TensorFlow Lite models, such as
 running inference with image classification, object detection, and pose
 estimation models. It also includes scripts to collect training
@@ -10,7 +10,7 @@ This project is designed specifically for a Raspberry Pi with a Coral USB
 Accelerator and a camera (though it may be repurposed for other systems as
 well).
 
-For detailed documentation using the Raspberry Pi, including the `coralkit`
+For detailed documentation using the Raspberry Pi, including the `aiymakerkit`
 API reference, see https://g.co/coral/kit-guide.
 
 ## Install
@@ -25,9 +25,9 @@ so follow [the instructions here](https://coral.ai/docs/accelerator/get-started/
 Then clone this repo and install as follows:
 
 ```
-git clone https://github.com/google-coral/coralkit.git
+git clone https://github.com/google-coral/aiy-maker-kit.git
 
-cd coralkit
+cd aiymakerkit
 
 python3 -m pip install .
 ```

@@ -1,13 +1,13 @@
-Coral Kit API reference
-=======================
+AIY Maker Kit API reference
+===========================
 
 
 Module summary
 --------------
 
-+ :mod:`coralkit.vision`
++ :mod:`aiymakerkit.vision`
 
-  .. automodule:: coralkit.vision
+  .. automodule:: aiymakerkit.vision
      :noindex:
 
 Contents

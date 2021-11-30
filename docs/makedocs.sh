@@ -64,17 +64,17 @@ usage() {
 if [[ "$#" -gt 1 ]]; then
   usage
 elif [[ "$#" -eq 1 ]]; then
-  if [[ "$1" = "-a" ]]; then
+  if [[ "$1" == "-a" ]]; then
     makeAll
-  elif [[ "$1" = "-w" ]]; then
+  elif [[ "$1" == "-w" ]]; then
     makeSphinxWeb
-  elif [[ "$1" = "-p" ]]; then
+  elif [[ "$1" == "-p" ]]; then
     makeSphinxPreview
-  elif [[ "$1" = "-c" ]]; then
+  elif [[ "$1" == "-c" ]]; then
     makeClean
   else
     usage
   fi
 else
-    makeAll
+  makeAll
 fi

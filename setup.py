@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Setup script to install the coralkit library as a package.
+Setup script to install the aiymakerkit library as a package.
 
-If you plan to modify the coralkit APIs, you should install the package
+If you plan to modify the aiymakerkit APIs, you should install the package
 to be editable:
 
 python3 -m pip install -e .
 
-Then you can make changes to the coralkit Python files and those changes
-are instantly available to other programs that import coralkit.
+Then you can make changes to the aiymakerkit Python files and those changes
+are instantly available to other programs that import aiymakerkit.
 """
 
 import os
@@ -29,26 +29,26 @@ from setuptools import setup
 
 
 def read(filename):
-  path = os.path.join(os.path.abspath(os.path.dirname(__file__)), filename)
-  with open(path, 'r', encoding='utf-8') as f:
-    return f.read()
+    path = os.path.join(os.path.abspath(os.path.dirname(__file__)), filename)
+    with open(path, 'r', encoding='utf-8') as f:
+        return f.read()
 
 
 def find_version(text):
-  match = re.search(r"^__version__\s*=\s*['\"](.*)['\"]\s*$", text,
-                    re.MULTILINE)
-  return match.group(1)
+    match = re.search(r"^__version__\s*=\s*['\"](.*)['\"]\s*$", text,
+                      re.MULTILINE)
+    return match.group(1)
 
 
 setup(
-  name='coralkit',
-  description='Simple API for ML inferencing with PyCoral and TF Lite',
-  long_description=read('README.md'),
-  license='Apache 2',
-  version=find_version(read('coralkit/__init__.py')),
-  author='Coral',
-  author_email='coral-support@google.com',
-  url='https://github.com/google-coral/coralkit',
-  packages=['coralkit'],
-  install_requires=['pycoral>=2.0.0'],
+    name='aiymakerkit',
+    description='Simple API for ML inferencing with PyCoral and TF Lite',
+    long_description=read('README.md'),
+    license='Apache 2',
+    version=find_version(read('aiymakerkit/__init__.py')),
+    author='Coral',
+    author_email='coral-support@google.com',
+    url='https://github.com/google-coral/coralkit',
+    packages=['aiymakerkit'],
+    install_requires=['pycoral>=2.0.0'],
 )

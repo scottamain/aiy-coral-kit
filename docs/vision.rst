@@ -2,27 +2,27 @@
 Image classification
 --------------------
 
-.. autoclass:: coralkit.vision.Classifier
+.. autoclass:: aiymakerkit.vision.Classifier
     :members:
 
 
 Object detection
 ----------------
 
-.. autoclass:: coralkit.vision.Detector
+.. autoclass:: aiymakerkit.vision.Detector
     :members:
 
 
 Pose detection
 --------------
 
-.. autoclass:: coralkit.vision.PoseDetector
+.. autoclass:: aiymakerkit.vision.PoseDetector
     :members:
     :undoc-members:
 
-.. autofunction:: coralkit.vision.get_keypoint_types
+.. autofunction:: aiymakerkit.vision.get_keypoint_types
 
-.. autoclass:: coralkit.vision.KeypointType
+.. autoclass:: aiymakerkit.vision.KeypointType
     :members:
     :undoc-members:
 
@@ -30,7 +30,7 @@ Pose detection
 Pose classification
 -------------------
 
-.. autoclass:: coralkit.vision.PoseClassifier
+.. autoclass:: aiymakerkit.vision.PoseClassifier
     :members:
     :undoc-members:
 
@@ -38,11 +38,11 @@ Pose classification
 Camera & drawing
 ----------------
 
-.. autofunction:: coralkit.vision.get_frames
+.. autofunction:: aiymakerkit.vision.get_frames
 
-.. autofunction:: coralkit.vision.save_frame
+.. autofunction:: aiymakerkit.vision.save_frame
 
-.. automodule:: coralkit.vision
+.. automodule:: aiymakerkit.vision
     :members: draw_classes, draw_objects, draw_pose, draw_label, draw_rect, draw_circle
     :member-order: bysource
 

@@ -14,10 +14,11 @@
 
 import argparse
 from pycoral.utils.dataset import read_label_file
-from coralkit import vision
+from aiymakerkit import vision
 import models
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser = argparse.ArgumentParser(
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
                     help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
 parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,

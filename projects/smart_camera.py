@@ -16,18 +16,20 @@ import os.path
 import cv2
 import time
 from datetime import datetime
-from coralkit import vision
+from aiymakerkit import vision
 from pycoral.adapters.detect import BBox
 
 PICTURE_DIR = os.path.join(os.path.expanduser('~'), 'Pictures')
 DELAY_SECS = 3
 snap_time = 0
 
+
 def box_is_in_box(bbox_a, bbox_b):
     if (bbox_a.xmin > bbox_b.xmin and bbox_a.xmax < bbox_b.xmax) and (
-        bbox_a.ymin > bbox_b.ymin and bbox_a.ymax < bbox_b.ymax):
+            bbox_a.ymin > bbox_b.ymin and bbox_a.ymax < bbox_b.ymax):
         return True
     return False
+
 
 # Load the neural network model
 detector = vision.Detector(vision.FACE_DETECTION_MODEL)
@@ -51,7 +53,8 @@ for frame in vision.get_frames():
             faces_in_box += 1
 
     # If everyone's in the box and some time has passed since last photo
-    if faces and faces_in_box == len(faces) and time.monotonic() - snap_time > DELAY_SECS:
+    if faces and faces_in_box == len(
+            faces) and time.monotonic() - snap_time > DELAY_SECS:
         timestamp = datetime.now()
         filename = "SMART_CAM_" + timestamp.strftime("%Y%m%d_%H%M%S") + '.png'
         filename = os.path.join(PICTURE_DIR, filename)

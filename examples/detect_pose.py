@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from pycoral.adapters.detect import BBox
-from coralkit import vision
+from aiymakerkit import vision
 import models
 
 pose_detector = vision.PoseDetector(models.MOVENET_MODEL)

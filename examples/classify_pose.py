@@ -18,7 +18,7 @@ https://g.co/coral/train-poses
 And save the Colab's .tflite and .txt output files into the "models" directory.
 """
 
-from coralkit import vision
+from aiymakerkit import vision
 from pycoral.utils.dataset import read_label_file
 import models
 

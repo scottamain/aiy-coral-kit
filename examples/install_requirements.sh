@@ -30,13 +30,14 @@ fi
 mkdir -p "${MODEL_DIR}"
 
 echo "Downloading demo files..."
-(cd "${MODEL_DIR}" && \
-curl -OL "${TEST_DATA_URL}/tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite" \
-     -OL "${TEST_DATA_URL}/imagenet_labels.txt" \
-     -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite" \
-     -OL "${TEST_DATA_URL}/coco_labels.txt" \
-     -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite" \
-     -OL "${TEST_DATA_URL}/mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite" \
-     -OL "${TEST_DATA_URL}/movenet_single_pose_lightning_ptq_edgetpu.tflite" \
-     )
+(
+  cd "${MODEL_DIR}" &&
+    curl -OL "${TEST_DATA_URL}/tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite" \
+      -OL "${TEST_DATA_URL}/imagenet_labels.txt" \
+      -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite" \
+      -OL "${TEST_DATA_URL}/coco_labels.txt" \
+      -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite" \
+      -OL "${TEST_DATA_URL}/mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite" \
+      -OL "${TEST_DATA_URL}/movenet_single_pose_lightning_ptq_edgetpu.tflite"
+)
 echo "Done."

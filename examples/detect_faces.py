@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from coralkit import vision
+from aiymakerkit import vision
 import models
 
 detector = vision.Detector(models.FACE_DETECTION_MODEL)

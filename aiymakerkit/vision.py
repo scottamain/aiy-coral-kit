@@ -24,6 +24,7 @@ import tflite_runtime.interpreter as tflite
 from pycoral.adapters import common
 from pycoral.adapters import classify
 from pycoral.adapters import detect
+from pycoral.utils import edgetpu
 
 _EDGETPU_SHARED_LIB = {
     'Linux': 'libedgetpu.so.1',
@@ -34,14 +35,6 @@ _EDGETPU_SHARED_LIB = {
 VIDEO_SIZE = (640, 480)
 CORAL_COLOR = (86, 104, 237)
 BLUE = (255, 0, 0)  # BGR (not RGB)
-
-
-def make_interpreter(model_file):
-    model_file, *device = model_file.split('@')
-    return tflite.Interpreter(
-        model_path=model_file,
-        experimental_delegates=[tflite.load_delegate(
-            _EDGETPU_SHARED_LIB, {'device': device[0]} if device else {})])
 
 
 #########################
@@ -100,7 +93,7 @@ class PoseDetector:
     """
 
     def __init__(self, model):
-        self.interpreter = make_interpreter(model)
+        self.interpreter = edgetpu.make_interpreter(model)
         self.interpreter.allocate_tensors()
 
     def get_pose(self, frame):
@@ -186,7 +179,7 @@ class Detector:
     """
 
     def __init__(self, model):
-        self.interpreter = make_interpreter(model)
+        self.interpreter = edgetpu.make_interpreter(model)
         self.interpreter.allocate_tensors()
 
     def get_objects(self, frame, threshold=0.01):
@@ -218,7 +211,7 @@ class Classifier:
     """
 
     def __init__(self, model):
-        self.interpreter = make_interpreter(model)
+        self.interpreter = edgetpu.make_interpreter(model)
         self.interpreter.allocate_tensors()
 
     def get_classes(self, frame, top_k=1, threshold=0.0):

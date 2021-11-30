@@ -1,19 +1,19 @@
-# Coral Kit API docs
+# AIY Maker Kit API docs
 
 This directory holds the source files required to build the API
 reference with Sphinx.
 
-If you're looking for the setup and developer docs for `coralkit`,
+If you're looking for the setup and developer docs for `aiymakerkit`,
 go to https://g.co/coral/kit-guide.
 
 ## Build the docs
 
-You can build the `coralkit` API reference docs as follows:
+You can build the `aiymakerkit` API reference docs as follows:
 
 ```
 # To ensure consistent results, use a Python virtual environment:
-python3 -m venv ~/.my_venvs/coraldocs
-source ~/.my_venvs/coraldocs/bin/activate
+python3 -m venv ~/.my_venvs/aiydocs
+source ~/.my_venvs/aiydocs/bin/activate
 
 # Navigate to this docs/ dir and install the doc dependencies:
 cd docs
