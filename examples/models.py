@@ -14,17 +14,19 @@
 
 import os.path
 
-PATH = os.path.dirname(os.path.realpath(__file__))
-FACE_DETECTION_MODEL = os.path.join(
-    PATH, 'models', 'ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite')
-OBJECT_DETECTION_MODEL = os.path.join(
-    PATH, 'models', 'ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
-CLASSIFICATION_MODEL = os.path.join(
-    PATH, 'models', 'tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite')
-CLASSIFICATION_IMPRINTING_MODEL = os.path.join(
-    PATH, 'models', 'mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite')
-MOVENET_MODEL = os.path.join(
-    PATH, 'models', 'movenet_single_pose_lightning_ptq_edgetpu.tflite')
+def path(name):
+    root = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(root, 'models', name)
 
-CLASSIFICATION_LABELS = os.path.join(PATH, 'models', 'imagenet_labels.txt')
-OBJECT_DETECTION_LABELS = os.path.join(PATH, 'models', 'coco_labels.txt')
+# Models
+FACE_DETECTION_MODEL = path('ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite')
+OBJECT_DETECTION_MODEL = path('ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
+CLASSIFICATION_MODEL = path('tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite')
+CLASSIFICATION_IMPRINTING_MODEL = path('mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite')
+MOVENET_MODEL = path('movenet_single_pose_lightning_ptq_edgetpu.tflite')
+YAMNET_MODEL = path('lite-model_yamnet_tflite_1.tflite')
+
+# Labels
+CLASSIFICATION_LABELS = path('imagenet_labels.txt')
+OBJECT_DETECTION_LABELS = path('coco_labels.txt')
+YAMNET_LABELS = path('yamnet_class_map.csv')

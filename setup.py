@@ -48,7 +48,7 @@ setup(
     version=find_version(read('aiymakerkit/__init__.py')),
     author='Coral',
     author_email='coral-support@google.com',
-    url='https://github.com/google-coral/coralkit',
+    url='https://github.com/google-coral/aiy-maker-kit',
     packages=['aiymakerkit'],
     install_requires=['pycoral>=2.0.0'],
 )
