@@ -36,6 +36,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 # Mock modules not needed for docs
 sys.modules.update([('tflite_runtime', unittest.mock.MagicMock())])
 sys.modules.update([('tflite_runtime.interpreter', unittest.mock.MagicMock())])
+sys.modules.update([('pyaudio', unittest.mock.MagicMock())])
 
 # -- Project information -----------------------------------------------------
 

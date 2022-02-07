@@ -24,9 +24,7 @@ OBJECT_DETECTION_MODEL = path('ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.t
 CLASSIFICATION_MODEL = path('tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite')
 CLASSIFICATION_IMPRINTING_MODEL = path('mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite')
 MOVENET_MODEL = path('movenet_single_pose_lightning_ptq_edgetpu.tflite')
-YAMNET_MODEL = path('lite-model_yamnet_tflite_1.tflite')
 
 # Labels
 CLASSIFICATION_LABELS = path('imagenet_labels.txt')
 OBJECT_DETECTION_LABELS = path('coco_labels.txt')
-YAMNET_LABELS = path('yamnet_class_map.csv')

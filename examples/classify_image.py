@@ -23,9 +23,6 @@ from pycoral.utils.dataset import read_label_file
 from aiymakerkit import vision
 import models
 
-classifier = vision.Classifier(models.CLASSIFICATION_MODEL)
-labels = read_label_file(models.CLASSIFICATION_LABELS)
-
 
 @contextlib.contextmanager
 def nonblocking(f):
@@ -42,7 +39,7 @@ def nonblocking(f):
         termios.tcsetattr(f, termios.TCSADRAIN, old_settings)
 
 
-def classify_image(frame):
+def classify_image(classifier, labels, frame):
     classes = classifier.get_classes(frame)
     label_id = classes[0].id
     score = classes[0].score
@@ -51,12 +48,12 @@ def classify_image(frame):
     return classes
 
 
-def classify_live():
+def classify_live(classifier, labels):
     with nonblocking(sys.stdin) as get_char:
         # Handle key events from GUI window.
         def handle_key(key, frame):
             if key == 32:  # Spacebar
-                classify_image(frame)
+                classify_image(classifier, labels, frame)
             if key == ord('q') or key == ord('Q'):
                 return False  # Quit the program
             return True  # Keep the camera alive, wait for keys
@@ -74,28 +71,24 @@ def classify_live():
 
 
 def main():
-    global classifier, labels
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-m', '--model',
+    parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
                         help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
-    parser.add_argument('-l', '--labels',
+    parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,
                         help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
     parser.add_argument('-i', '--input',
                         help='Image to be classified. If not given, use spacebar to capture and classify an image.')
     args = parser.parse_args()
 
-    if args.model:
-        classifier = vision.Classifier(args.model)
-
-    if args.labels:
-        labels = read_label_file(args.labels)
+    classifier = vision.Classifier(args.model)
+    labels = read_label_file(args.labels)
 
     if args.input:
         frame = imread(args.input)
-        classify_image(frame)
+        classify_image(classifier, labels. frame)
     else:
-        classify_live()
+        classify_live(classifier, labels)
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ python3 -m pip install ${SCRIPT_DIR}/..
 
 if [[ -d "${MODEL_DIR}" ]]; then
   echo "Models directory exists. Skipping downloads."
-  exit 0
+  exit 1
 fi
 
 mkdir -p "${MODEL_DIR}"
@@ -32,9 +32,7 @@ mkdir -p "${MODEL_DIR}"
 echo "Downloading demo files..."
 (
   cd "${MODEL_DIR}" &&
-    curl -L -o lite-model_yamnet_tflite_1.tflite https://storage.googleapis.com/tfhub-lite-models/google/lite-model/yamnet/tflite/1.tflite \
-      -OL https://raw.githubusercontent.com/tensorflow/models/master/research/audioset/yamnet/yamnet_class_map.csv \
-      -OL "${TEST_DATA_URL}/tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite" \
+    curl -OL "${TEST_DATA_URL}/tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite" \
       -OL "${TEST_DATA_URL}/imagenet_labels.txt" \
       -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite" \
       -OL "${TEST_DATA_URL}/coco_labels.txt" \

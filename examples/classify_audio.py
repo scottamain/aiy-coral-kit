@@ -15,19 +15,18 @@
 from aiymakerkit import audio
 
 import argparse
-import models
 
-def callback(label, score):
+
+def handle_results(label, score):
     print('CALLBACK: ', label, '=>', score)
     return True  # keep listening
 
-
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--audio_device_index', type=int, default=0)
+    parser.add_argument('model_file', type=str)
     args = parser.parse_args()
 
-    audio.classify_audio(model_file=models.YAMNET_MODEL,
-                         labels_file=models.YAMNET_LABELS,
-                         callback=callback,
-                         audio_device_index=args.audio_device_index)
+    audio.classify_audio(model=args.model_file, callback=handle_results)
+
+if __name__ == '__main__':
+    main()

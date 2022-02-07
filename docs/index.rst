@@ -10,6 +10,16 @@ Module summary
   .. automodule:: aiymakerkit.vision
      :noindex:
 
++ :mod:`aiymakerkit.audio`
+
+  .. automodule:: aiymakerkit.audio
+     :noindex:
+
++ :mod:`aiymakerkit.utils`
+
+  .. automodule:: aiymakerkit.utils
+     :noindex:
+
 Contents
 --------
 
@@ -17,6 +27,8 @@ Contents
    :maxdepth: 1
 
    vision
+   audio
+   utils
 
 
 API indices

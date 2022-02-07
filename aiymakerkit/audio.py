@@ -12,62 +12,148 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import csv
+import contextlib
+import json
 import numpy as np
+import os
 import queue
+import sys
 import threading
 
+import pyaudio
 import tflite_runtime.interpreter as tflite
 
-from . import audio_recorder
+from pycoral.utils import dataset
+from tflite_support import metadata
 
-def load_labels(class_map_csv):
-    """Read the class name file and return a list of strings."""
-    with open(class_map_csv) as f:
-        reader = csv.reader(f)
-        next(reader)  # Skip header
-        return [display_name for _, _, display_name in reader]
+from . import ring_buffer
+from . import utils
+
+@contextlib.contextmanager
+def pyaudio_stream(*args, **kwargs):
+    audio = pyaudio.PyAudio()
+    try:
+        stream = audio.open(*args, **kwargs)
+        try:
+            yield stream
+        finally:
+            stream.stop_stream()
+            stream.close()
+    finally:
+        audio.terminate()
 
 
-def classify_audio(model_file, labels_file, callback,
-                   audio_device_index=0, sample_rate_hz=16000,
-                   negative_threshold=0.6, num_audio_frames=4096):
-    """Acquire audio, preprocess, and classify."""
-    if sample_rate_hz not in (16000, 48000):
-        raise ValueError('Sample rate must be 16000 Hz or 48000 Hz')
+def model_audio_properties(model_file):
+    displayer = metadata.MetadataDisplayer.with_model_file(model_file)
+    metadata_json = json.loads(displayer.get_metadata_json())
+    if metadata_json['name'] != 'AudioClassifier':
+        raise ValueError('Model must be an audio classifier')
+    props = metadata_json['subgraph_metadata'][0]['input_tensor_metadata'][0] \
+                         ['content']['content_properties']
+    return int(props['sample_rate']), int(props['channels'])
 
-    downsample_factor = {16000: 1, 48000: 3}[sample_rate_hz]
 
-    # Most microphones support this
-    # Because the model expects 16KHz audio, we downsample 3 fold
-    recorder = audio_recorder.AudioRecorder( sample_rate_hz,
-        downsample_factor=downsample_factor, device_index=audio_device_index)
-    labels = load_labels(labels_file)
+def classify_audio(model, callback,
+                   labels_file=None,
+                   inference_overlap_ratio=0.5,
+                   buffer_size_secs=2.0,
+                   buffer_write_size_secs=0.1,
+                   audio_device_index=None):
+    """
+    Continuously classifies audio samples from the microphone, yielding results
+    to your own callback function.
 
-    interpreter = tflite.Interpreter(model_path=model_file)
+    Your callback function receives the top classification result for every
+    inference performed. Although the audio sample size is fixed based on the
+    model input size, you can adjust the rate of inference with
+    ``inference_overlap_ratio``. A larger overlap means the model runs inference
+    more frequently but with larger amounts of sample data shared between
+    inferences.
 
-    input_details = interpreter.get_input_details()
-    waveform_input_index = input_details[0]['index']
+    Args:
+        model (str): Path to a ``.tflite`` file.
+        callback: A function that takes two arguments (in order): a string for
+            the classification label, and a float for the prediction score.
+            The function must return a boolean: True to continue running
+            inference, or False to stop.
+        labels_file (str): Path to a labels file (required only if the model
+            does not include metadata labels). If provided, this overrides the
+            labels file provided in the model metadata.
+        inference_overlap_ratio (float): The amount of audio that should overlap
+            between each sample used for inference. May be 0.0 up to (but not
+            including) 1.0. For example, if set to 0.5 and the model takes a
+            one-second sample as input, the model will run an inference every
+            half second, or if set to 0, it will run once each second.
+        buffer_size_secs (float): The length of audio to hold in the audio
+            buffer.
+        buffer_write_size_secs (float): The length of audio to capture into the
+            buffer with each sampling from the microphone.
+        audio_device_index (int): The audio input device index to use.
+    """
+    if not model:
+        raise ValueError('model must be specified')
 
-    output_details = interpreter.get_output_details()
-    scores_output_index = output_details[0]['index']
-    embeddings_output_index = output_details[1]['index']
-    spectrogram_output_index = output_details[2]['index']
+    if buffer_size_secs <= 0.0:
+        raise ValueError('buffer_size_secs must be positive')
 
-    interpreter.resize_tensor_input(waveform_input_index,
-                                    [num_audio_frames],
-                                    strict=True)
+    if buffer_write_size_secs <= 0.0:
+        raise ValueError('buffer_write_size_secs must be positive')
+
+    if inference_overlap_ratio < 0.0 or \
+       inference_overlap_ratio >= 1.0:
+        raise ValueError('inference_overlap_ratio must be in [0.0 .. 1.0)')
+
+    sample_rate_hz, channels = model_audio_properties(model)
+
+    if labels_file is not None:
+        labels = dataset.read_label_file(labels_file)
+    else:
+        labels = utils.read_labels_from_metadata(model)
+
+    print('Say one of the following:')
+    for value in labels.values():
+        print('  %s' % value)
+
+    interpreter = tflite.Interpreter(model_path=model)
     interpreter.allocate_tensors()
 
-    with recorder:
-        print("Ready for voice commands...")
+    # Input tensor
+    input_details = interpreter.get_input_details()
+    waveform_input_index = input_details[0]['index']
+    _, num_audio_frames = input_details[0]['shape']
+    waveform = np.zeros(num_audio_frames, dtype=np.float32)
+
+    # Output tensor
+    output_details = interpreter.get_output_details()
+    scores_output_index = output_details[0]['index']
+
+    ring_buffer_size = int(buffer_size_secs * sample_rate_hz)
+    frames_per_buffer = int(buffer_write_size_secs * sample_rate_hz)
+    remove_size = int((1.0 - inference_overlap_ratio) * len(waveform))
+
+    rb = ring_buffer.ConcurrentRingBuffer(
+            np.zeros(ring_buffer_size, dtype=np.float32))
+
+    def stream_callback(in_data, frame_count, time_info, status):
+        try:
+            rb.write(np.frombuffer(in_data, dtype=np.float32), block=False)
+        except ring_buffer.Overflow:
+            print('WARNING: Dropping input audio buffer', file=sys.stderr)
+
+        return None, pyaudio.paContinue
+
+    with pyaudio_stream(format=pyaudio.paFloat32,
+                        channels=channels,
+                        rate=sample_rate_hz,
+                        frames_per_buffer=frames_per_buffer,
+                        stream_callback=stream_callback,
+                        input=True,
+                        input_device_index=audio_device_index) as stream:
         keep_listening = True
         while keep_listening:
-            waveform, _, _ = recorder.get_audio(num_audio_frames)
-            waveform /= 32768.0  # Convert to [-1.0, +1.0]
-            waveform = np.squeeze(waveform.astype('float32'))
+            rb.read(waveform, remove_size=remove_size)
 
-            interpreter.set_tensor(waveform_input_index, waveform)
+            interpreter.set_tensor(waveform_input_index, [waveform])
             interpreter.invoke()
             scores = interpreter.get_tensor(scores_output_index)
             scores = np.mean(scores, axis=0)
@@ -76,22 +162,36 @@ def classify_audio(model_file, labels_file, callback,
 
 
 class AudioClassifier:
-    """Performs classifications with a speech detection model.
+    """Performs classifications with a speech classification model.
+
+    This is intended for situations where you want to write a loop in your code
+    that fetches new classification results in each iteration (by calling
+    :func:`next()`). If you instead want to receive a callback each time a new
+    classification is detected, instead use :func:`classify_audio()`.
+
     Args:
-      model_file: Path to a `.tflite` speech classification model (compiled for the Edge TPU).\
-      labels_file: Path to the corresponding labels file for the model.
-      audio_device_index: Specify the device card for your mic. Defaults to 0.
-        You can check from the command line with `arecord -l`. On Raspberry Pi, your mic must be via
-        USB or a sound card HAT, because the Pi's headphone jack does not support mic input.
+        model (str): Path to a ``.tflite`` file.
+        labels_file (str): Path to a labels file (required only if the model
+            does not include metadata labels). If provided, this overrides the
+            labels file provided in the model metadata.
+        inference_overlap_ratio (float): The amount of audio that should overlap
+            between each sample used for inference. May be 0.0 up to (but not
+            including) 1.0. For example, if set to 0.5 and the model takes a
+            one-second sample as input, the model will run an inference every
+            half second, or if set to 0, it will run once each second.
+        buffer_size_secs (float): The length of audio to hold in the audio
+            buffer.
+        buffer_write_size_secs (float): The length of audio to capture into the
+            buffer with each sampling from the microphone.
+        audio_device_index (int): The audio input device index to use.
     """
 
-    def __init__(self, model_file, labels_file, audio_device_index=0):
-        self._thread = threading.Thread(target=classify_audio,
-                                        args=(
-                                            model_file, labels_file,
-                                            self._callback,
-                                            audio_device_index), daemon=True)
+    def __init__(self, **kwargs):
         self._queue = queue.Queue()
+        self._thread = threading.Thread(
+                target=classify_audio,
+                kwargs={'callback': self._callback, **kwargs},
+                daemon=True)
         self._thread.start()
 
     def _callback(self, label, score):
@@ -100,13 +200,17 @@ class AudioClassifier:
 
     def next(self, block=True):
         """
-        Returns a speech classification.
-        Each time you call this, it pulls from a queue of recent classifications. So even if there are
-        many classifications in a short period of time, this always returns them in the order received.
+        Returns a single speech classification.
+
+        Each time you call this, it pulls from a queue of recent
+        classifications. So even if there are many classifications in a short
+        period of time, this always returns them in the order received.
+
         Args:
-          block (boolean): Whether this function should block until the next classification arrives (if
-            there are no queued classification). If False, it always returns immediately and returns
-            None if the classification queue is empty.
+            block (bool): Whether this function should block until the next
+                classification arrives (if there are no queued classifications).
+                If False, it always returns immediately and returns None if the
+                classification queue is empty.
         """
         try:
             result = self._queue.get(block)

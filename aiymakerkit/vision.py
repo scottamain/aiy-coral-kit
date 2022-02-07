@@ -89,7 +89,7 @@ class PoseDetector:
     """Performs inferencing with a pose detection model such as MoveNet.
 
     Args:
-      model: Path to a ``.tflite`` file (compiled for the Edge TPU).
+      model (str): Path to a ``.tflite`` file (compiled for the Edge TPU).
     """
 
     def __init__(self, model):
@@ -104,8 +104,8 @@ class PoseDetector:
           frame: The bitmap image to pass through the model.
 
         Returns:
-          The COCO-style keypoint results, reshaped to [17, 3], in which each keypoint
-          has [y, x, score].
+          The COCO-style keypoint results, reshaped to [17, 3], in which each
+          keypoint has [y, x, score].
         """
         resized_img = cv2.resize(frame, common.input_size(self.interpreter),
                                  fx=0, fy=0, interpolation=cv2.INTER_CUBIC)
@@ -120,7 +120,7 @@ class PoseClassifier:
     `g.co/coral/train-poses <https://g.co/coral/train-poses>`_.
 
     Args:
-      model: Path to a ``.tflite`` file.
+      model (str): Path to a ``.tflite`` file.
     """
 
     def __init__(self, model):
@@ -132,8 +132,10 @@ class PoseClassifier:
         Gets the top pose classification result.
 
         Args:
-          keypoints: The COCO-style pose keypoints, as output from a pose detection model.
-          threshold: The minimum confidence score for the returned classification.
+          keypoints: The COCO-style pose keypoints, as output from a pose
+            detection model.
+          threshold (float): The minimum confidence score for the returned
+            classification.
 
         Returns:
           The class id for the top result.
@@ -149,16 +151,19 @@ class PoseClassifier:
 
 
 def get_keypoint_types(frame, keypoints, threshold=0.01):
-    """Converts keypoint data into dictionary with values scaled for the image size.
+    """Converts keypoint data into dictionary with values scaled for the image
+    size.
 
     Args:
       frame: The original image used for pose detection.
-      keypoints: The COCO-style pose keypoints, as output from a pose detection model.
-      threshold: The minimum confidence score for returned results.
+      keypoints: A COCO-style keypoints tensor in shape [17, 3], such as
+        returned by :func:`PoseDetector.get_pose()`.
+      threshold (float): The minimum confidence score for returned results.
 
     Returns:
-      A dictionary with an item for every body keypoint detected above the given threshold,
-      wherein each key is the :obj:`KeypointType` and the value is a tuple for its (x,y) location.
+      A dictionary with an item for every body keypoint detected above the given
+      threshold, wherein each key is the :obj:`KeypointType` and the value is a
+      tuple for its (x,y) location.
     """
     height, width, _ = frame.shape
     points = {}
@@ -175,7 +180,8 @@ class Detector:
     """Performs inferencing with an object detection model.
 
     Args:
-      model: Path to a ``.tflite`` file (compiled for the Edge TPU). Must be an SSD model.
+      model (str): Path to a ``.tflite`` file (compiled for the Edge TPU).
+        Must be an SSD model.
     """
 
     def __init__(self, model):
@@ -188,11 +194,11 @@ class Detector:
 
         Args:
           frame: The bitmap image to pass through the model.
-          threshold: The minimum confidence score for returned results.
+          threshold (float): The minimum confidence score for returned results.
 
         Returns:
-          A list of |Object|_ objects, each of which contains a detected object's id, score,
-          and bounding box as |BBox|_ .
+          A list of |Object|_ objects, each of which contains a detected
+          object's id, score, and bounding box as |BBox|_.
         """
         height, width, _ = frame.shape
         _, scale = common.set_resized_input(self.interpreter, (width, height),
@@ -207,7 +213,7 @@ class Classifier:
     """Performs inferencing with an image classification model.
 
     Args:
-      model: Path to a ``.tflite`` file (compiled for the Edge TPU).
+      model (str): Path to a ``.tflite`` file (compiled for the Edge TPU).
     """
 
     def __init__(self, model):
@@ -220,11 +226,12 @@ class Classifier:
 
         Args:
           frame: The bitmap image to pass through the model.
-          top_k: The number of top results to return.
-          threshold: The minimum confidence score for returned results.
+          top_k (int): The number of top results to return.
+          threshold (float): The minimum confidence score for returned results.
 
         Returns:
-          A list of |Class|_ objects representing the classification results, ordered by scores.
+          A list of |Class|_ objects representing the classification results,
+          ordered by scores.
         """
         size = common.input_size(self.interpreter)
         common.set_input(self.interpreter, cv2.resize(frame, size, fx=0, fy=0,
@@ -244,8 +251,9 @@ def draw_classes(frame, classes, labels, color=CORAL_COLOR):
     Args:
       frame: The bitmap image to draw upon.
       classes: A list of |Class|_  objects representing the classified objects.
-      labels: The labels file corresponding to model used for image classification.
-      color: The BGR color to use for the text.
+      labels (str): The labels file corresponding to model used for image
+        classification.
+      color (tuple): The BGR color (int,int,int) to use for the text.
     """
     for index, score in classes:
         label = '%s (%.2f)' % (labels.get(index, 'n/a'), score)
@@ -259,10 +267,12 @@ def draw_objects(frame, objs, labels=None, color=CORAL_COLOR, thickness=5):
 
     Args:
       frame: The bitmap image to draw upon.
-      objs: A list of |Object|_ objects for which you want to draw bounding boxes on the frame.
-      labels: The labels file corresponding to the model used for object detection.
-      color: The BGR color to use for the bounding box.
-      thickness: The bounding box pixel thickness.
+      objs: A list of |Object|_ objects for which you want to draw bounding
+        boxes on the frame.
+      labels (str): The labels file corresponding to the model used for object
+        detection.
+      color (tuple): The BGR color (int,int,int) to use for the bounding box.
+      thickness (int): The bounding box pixel thickness.
     """
     for obj in objs:
         bbox = obj.bbox
@@ -277,19 +287,23 @@ def draw_objects(frame, objs, labels=None, color=CORAL_COLOR, thickness=5):
 
 def draw_pose(frame, keypoints, threshold=0.2, color=CORAL_COLOR,
               circle_radius=5, line_thickness=2):
-    """Draws the pose skeleton on the image sent to the display and returns structured keypoints.
+    """Draws the pose skeleton on the image sent to the display and returns
+    structured keypoints.
 
     Args:
       frame: The bitmap image to draw upon.
-      keypoints: The COCO-style pose keypoints, as output from a pose detection model.
-      threshold: The minimum confidence score for returned keypoint data.
-      color: The BGR color to use for the bounding box.
-      circle_radius: The radius size of each keypoint dot.
-      line_thickness: The pixel thickness for lines connecting the keypoint dots.
+      keypoints: A COCO-style pose keypoints tensor in shape [17, 3], such as
+        returned by :func:`PoseDetector.get_pose()`.
+      threshold (float): The minimum confidence score for returned keypoint data.
+      color (tuple): The BGR color (int,int,int) to use for the bounding box.
+      circle_radius (int): The radius size of each keypoint dot.
+      line_thickness (int): The pixel thickness for lines connecting the
+        keypoint dots.
 
     Returns:
-      A dictionary with an item for every body keypoint that is detected above the given threshold,
-      wherein each key is the :obj:`KeypointType` and the value is at tuple for its (x,y) location.
+      A dictionary with an item for every body keypoint that is detected above
+      the given threshold, wherein each key is the :obj:`KeypointType` and the
+      value is at tuple for its (x,y) location.
       (Exactly the same return as :func:`get_keypoint_types()`.)
     """
     # Get the structured keypoint types
@@ -312,8 +326,8 @@ def draw_label(frame, label, color=CORAL_COLOR):
 
     Args:
       frame: The bitmap image to draw upon.
-      label: The string to write.
-      color: The BGR color for the text.
+      label (str): The string to write.
+      color (tuple): The BGR color (int,int,int) for the text.
     """
     cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_PLAIN, 2.0, color, 2)
 
@@ -323,10 +337,11 @@ def draw_circle(frame, point, radius, color=CORAL_COLOR, thickness=5):
 
     Args:
       frame: The bitmap image to draw upon.
-      point: An (x, y) tuple specifying the circle center.
-      radius: The radius size of the circle.
-      color: The BGR color to use.
-      thickness: The circle's pixel thickness. Set to -1 to fill the circle.
+      point (tuple): An (x,y) tuple specifying the circle center.
+      radius (int): The radius size of the circle.
+      color (tuple): The BGR color (int,int,int) to use.
+      thickness (int): The circle's pixel thickness. Set to -1 to fill the
+        circle.
     """
     cv2.circle(frame, point, radius, color, thickness)
 
@@ -337,8 +352,8 @@ def draw_rect(frame, bbox, color=BLUE, thickness=5):
     Args:
       frame: The bitmap image to draw upon.
       bbox: A |BBox|_  object.
-      color: The BGR color to use.
-      thickness: The box pixel thickness. Set to -1 to fill the box."""
+      color (tuple): The BGR color (int,int,int) to use.
+      thickness (int): The box pixel thickness. Set to -1 to fill the box."""
     cv2.rectangle(frame, (bbox.xmin, bbox.ymin), (bbox.xmax, bbox.ymax), color,
                   thickness)
 
@@ -349,18 +364,19 @@ def get_frames(title='Camera', size=VIDEO_SIZE, handle_key=None,
     Gets a stream of image frames from the camera.
 
     Args:
-      title: A title for the display window.
-      size: The image resolution for all frames, as a tuple (x, y).
-      handle_key: A callback function that accepts arguments (key, frame) for a key event and
-        the image frame from the moment the key was pressed.
-      capture_device_index: The Linux device ID for the camera.
-      mirror: Whether to flip the image horizontally (set True for a selfie view).
-      return_key: Whether to also return any key presses. If True, the function returns a tuple with
-        (frame, key) instead of just the frame.
+      title (str): A title for the display window.
+      size (tuple): The image resolution for all frames, as an int tuple (x,y).
+      handle_key: A callback function that accepts arguments (key, frame) for
+        a key event and the image frame from the moment the key was pressed.
+      capture_device_index (int): The Linux device ID for the camera.
+      mirror (bool): Whether to flip the image horizontally (set True for a
+        selfie view).
+      return_key (bool): Whether to also return any key presses. If True, the
+        function returns a tuple with (frame, key) instead of just the frame.
 
     Returns:
-      An iterator that yields each image frame from the default camera. Or a tuple if ``return_key``
-      is True.
+      An iterator that yields each image frame from the default camera. Or a
+      tuple if ``return_key`` is True.
     """
     width, height = size
 
@@ -417,7 +433,7 @@ def save_frame(filename, frame):
     Saves an image to a specified location.
 
     Args:
-      filename: The path where you'd like to save the image.
+      filename (str): The path where you'd like to save the image.
       frame: The bitmap image to save.
     """
     os.makedirs(os.path.dirname(filename), exist_ok=True)

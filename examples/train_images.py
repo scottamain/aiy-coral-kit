@@ -72,9 +72,9 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--labels', '-l', type=str, required=True,
                         help='Labels file')
-    parser.add_argument('--capture_dir', '-d', type=str,
-                        default='capture',
-                        help='Capture directory')
+    parser.add_argument('--captures_dir', '-d', type=str,
+                        default='captures',
+                        help='Captures directory')
     parser.add_argument('--model', '-m', type=str,
                         default=DEFAULT_BASE_MODEL,
                         help='Base model')
