@@ -30,7 +30,7 @@ while true; do
   case $yn in
     [Yy]* )
       echo
-      if !(cd "${SCRIPT_DIR}" && python3 test.py); then
+      if !(cd "${SCRIPT_DIR}" && python3 test_cam.py); then
         exit 1;
       fi
       break;;
