@@ -12,6 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Performs one image classification at a time, either from a camera or file.
+
+To capture an image from the camera and classify it using our MobileNet model,
+simply run the script (and then press the Spacebar to capture an image):
+
+    python3 classify_image.py
+
+Or classify from the camera using your own model and labels file:
+
+    python3 classify_image.py -m my_model.tflite -l my_labels.txt
+
+And to classify an existing image file, just pass your image:
+
+    python3 classify_image.py -i my_image.jpg
+
+For information about the script options, run:
+
+    python3 classify_image.py --help
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
+"""
+
 import argparse
 import contextlib
 import select
@@ -26,6 +49,7 @@ import models
 
 @contextlib.contextmanager
 def nonblocking(f):
+    """Context manager to listen for key events."""
     def get_char():
         if select.select([f], [], [], 0) == ([f], [], []):
             return sys.stdin.read(1)
@@ -40,6 +64,16 @@ def nonblocking(f):
 
 
 def classify_image(classifier, labels, frame):
+    """
+    Classify an image and print the top result.
+
+    Args:
+      classifier: A ``vision.Classifier`` object.
+      labels: The labels file for the Classifier model.
+      frame: The image to classify.
+    Returns:
+      A list of all class predictions, ordered by score.
+    """
     classes = classifier.get_classes(frame)
     label_id = classes[0].id
     score = classes[0].score
@@ -49,6 +83,10 @@ def classify_image(classifier, labels, frame):
 
 
 def classify_live(classifier, labels):
+    """
+    Wait for the Spacebar key event, and then capture an image from the
+    camera and classify it with ``classify_image()``.
+    """
     with nonblocking(sys.stdin) as get_char:
         # Handle key events from GUI window.
         def handle_key(key, frame):
@@ -86,7 +124,7 @@ def main():
 
     if args.input:
         frame = imread(args.input)
-        classify_image(classifier, labels. frame)
+        classify_image(classifier, labels, frame)
     else:
         classify_live(classifier, labels)
 

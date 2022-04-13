@@ -12,6 +12,60 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Captures images from the camera and saves them into labeled folders.
+This is designed to create an image dataset you can use to train a model.
+
+To capture individual images:
+
+1. Create a text file with a different class label on each line. For example:
+
+    Background
+    Apple
+    Banana
+
+It's important that the first item be "Background" to indicate when there are
+no objects in view. And beware that for each labels file, this script supports
+a total of 10 labels (limited by the number of digit keys on the keyboard).
+
+2. Run this script and pass your labels file:
+
+    python3 collect_images.py -l my-labels.txt
+
+3. Capture several pictures of the "Background" by pressing 0 (the zero key)
+at least 10 times. More images is always better for training, but if you plan
+on using these images with the train_images.py script, then 10 images is usually
+enough for a basic image classifier.
+
+4. Place the first object ("Apple") into the camera view and press 1 (the one
+key). Adjust the position of the object, and press 1 again. Repeat many times.
+
+5. Repeat step 4 for object number 2 (press 2 while showing "Banana") and so on.
+
+The images are saved in a local "captures" directory, using subdirectory
+names that correspond to names in your labels file. If you do not provide a
+labels file, the subdirectories are simply named as the numbers you pressed.
+
+That's it. Now you have a labeled image dataset.
+
+Alternatively, you can perform continuous image capture so you don't need to
+repeatedly press the same number over and over. Just add the `--continuous`
+flag with the number of images you want to capture, and this code will
+rapid-fire capture that many photos. For example:
+
+    python3 collect_images.py -l my-labels.txt --continuous 20
+
+Then, when you press a given number, it will capture 20 photos for that label
+(it does so after a short delay so you can get in position, which is necessary
+if you're capturing photos for pose classification).
+
+For information about all the script options, run:
+
+    python3 collect_images.py --help
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
+"""
+
 import argparse
 import contextlib
 import queue

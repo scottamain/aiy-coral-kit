@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This is an example project that automatically takes a photo when all faces
+detected by the model are near the center of the camera frame.
+
+For more details about this project, see:
+https://aiyprojects.withgoogle.com/maker/#guides--build-a-face-detecting-smart-camera
+"""
+
 import os.path
 import cv2
 import time
@@ -25,6 +33,15 @@ snap_time = 0
 
 
 def box_is_in_box(bbox_a, bbox_b):
+    """
+    Checks if bounding-box "a" is fully inside bounding-box "b".
+
+    Args:
+      bbox_a: The ``BBox`` object you want to identify as "in" or "out".
+      bbox_b: The ``BBox`` object that might contain bbox_a.
+    Returns:
+      True if "a" is inside "b"; false otherwise.
+    """
     if (bbox_a.xmin > bbox_b.xmin and bbox_a.xmax < bbox_b.xmax) and (
             bbox_a.ymin > bbox_b.ymin and bbox_a.ymax < bbox_b.ymax):
         return True

@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Installs everything that's required to use the examples in this directory.
+# First it installs the aiymakerkit Python library and then all the
+# TensorFlow Lite models used by the examples.
+
 set -e
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

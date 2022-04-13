@@ -13,6 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This script installs everything you need to use the aiymakerkit library
+# and run the example code in examples/.
+#
+# Just navigate to this directory in your terminal and run the script:
+#
+#    bash run_demo.sh
+#
+# For more instructions, see https://aiyprojects.withgoogle.com/maker/
+
 set -e
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,7 +39,7 @@ while true; do
   case $yn in
     [Yy]* )
       echo
-      if !(cd "${SCRIPT_DIR}" && python3 test_cam.py); then
+      if !(cd "${SCRIPT_DIR}" && python3 "scripts/test_cam.py"); then
         exit 1;
       fi
       break;;
@@ -51,4 +60,4 @@ while true; do
 done
 
 echo
-echo "See more demos in ${SCRIPT_DIR}/examples/."
+echo "You can try more code in ${SCRIPT_DIR}/examples/."

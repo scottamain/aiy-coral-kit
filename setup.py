@@ -11,16 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
-Setup script to install the aiymakerkit library as a package.
+Standard Python script to install the aiymakerkit library as a package.
 
-If you plan to modify the aiymakerkit APIs, you should install the package
-to be editable:
+Most users should not run this script directly. Instead use the run_demo.sh
+script, which will ensure that all required packages are installed and then
+run a demo to verify everything works:
 
-python3 -m pip install -e .
+    bash run_demo.sh
+
+However, if you want to make changes to the aiymakerkit APIs, you can install
+this package manually to be editable:
+
+    python3 -m pip install -e .
 
 Then you can make changes to the aiymakerkit Python files and those changes
 are instantly available to other programs that import aiymakerkit.
+
+NOTE: If you do install manually, pycoral must first be installed as follows:
+    python3 -m pip install --extra-index-url https://google-coral.github.io/py-repo/ pycoral~=2.0
 """
 
 import os
@@ -42,7 +52,7 @@ def find_version(text):
 
 setup(
     name='aiymakerkit',
-    description='Simple API for ML inferencing with PyCoral and TF Lite',
+    description='Simple API for ML inferencing with TF Lite and Coral Edge TPU',
     long_description=read('README.md'),
     license='Apache 2',
     version=find_version(read('aiymakerkit/__init__.py')),
@@ -50,5 +60,6 @@ setup(
     author_email='coral-support@google.com',
     url='https://github.com/google-coral/aiy-maker-kit',
     packages=['aiymakerkit'],
-    install_requires=['pycoral>=2.0.0', 'tflite-support>=0.3.1'],
+    install_requires=['pycoral>=2.0.0', 'tflite-support>=0.3.1',
+            'tflite-runtime', 'pyaudio', 'opencv-python', 'numpy'],
 )

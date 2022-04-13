@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+A collection of TensorFlow Lite models for use with aiymakerkit examples.
+
+The files specified here do not exist until you run install_requirements.sh,
+which is actually called by the run_demo.sh script at the root of this repo.
+"""
+
 import os.path
 
 def path(name):

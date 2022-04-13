@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Performs continuous face detection with the camera.
+
+Simply run the script and it will draw boxes around detected faces:
+
+    python3 detect_faces.py
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
+"""
+
 from aiymakerkit import vision
 import models
 

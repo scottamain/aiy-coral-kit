@@ -12,6 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Performs live speech recognition with a microphone.
+
+To run the script, pass a speech model as the only argument:
+
+    python3 classify_audio.py soundclassifier_with_metadata.tflite
+
+Specifically, the model must be based on BrowserFFT, which you can train
+yourself at https://teachablemachine.withgoogle.com/train/audio
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
+"""
+
 from aiymakerkit import audio
 
 import argparse

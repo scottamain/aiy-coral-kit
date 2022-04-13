@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+This is an example project that detects when a person walks into a specific
+region of the camera view.
+
+As is, this code simply changes the color of the bounding-box drawn around the
+person when they enter the fenced area. The code also makes some arbitrary
+guesses about what proportion of the person's body must be in the fencee area
+to be considered inside it. So you probably need to adjust these parameters to
+suit your situation.
+
+For more details about this project, see:
+https://aiyprojects.withgoogle.com/maker/#guides--build-a-person-detecting-security-camera
+"""
+
 from aiymakerkit import vision
 from pycoral.adapters.detect import BBox
 from pycoral.utils.dataset import read_label_file

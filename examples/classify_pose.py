@@ -11,11 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""MoveNet pose classification example.
+
+"""
+Performs pose classification using the MoveNet model.
+
+The MoveNet model identifies the body keypoints on a person, and then this
+code passes those keypoints to a custom-trained pose classifier model that
+classifies the pose with a label, such as the name of a yoga pose.
 
 You must first complete the Google Colab to train the pose classification model:
 https://g.co/coral/train-poses
-And save the Colab's .tflite and .txt output files into the "models" directory.
+And save the output .tflite and .txt files into the examples/models/ directory.
+
+Then just run this script:
+
+    python3 classify_pose.py
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
 """
 
 from aiymakerkit import vision

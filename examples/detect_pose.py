@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Performs continuous pose detection with the camera.
+
+Simply run the script and it will draw skeletal keypoints on a detected
+person (the MoveNet model will detect only one person at a time):
+
+    python3 detect_pose.py
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
+"""
+
 from pycoral.adapters.detect import BBox
 from aiymakerkit import vision
 import models

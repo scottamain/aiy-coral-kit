@@ -73,5 +73,6 @@ def main():
 
         print('Recording saved at', FILENAME)
 
+
 if __name__ == '__main__':
-  main()
+    main()

@@ -12,25 +12,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Performs continuous image classification with the camera video.
+
+To classify things using a default MobileNet model, simply run the script:
+
+    python3 classify_video.py
+
+Or classify using your own model and labels file:
+
+    python3 classify_video.py -m my_model.tflite -l my_labels.txt
+
+For information about the script options, run:
+
+    python3 classify_video.py --help
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
+"""
+
 import argparse
 from pycoral.utils.dataset import read_label_file
 from aiymakerkit import vision
 import models
 
-parser = argparse.ArgumentParser(
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
-                    help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
-parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,
-                    help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
-args = parser.parse_args()
 
-classifier = vision.Classifier(args.model)
-labels = read_label_file(args.labels)
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
+                        help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
+    parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,
+                        help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
+    args = parser.parse_args()
 
-for frame in vision.get_frames():
-    classes = classifier.get_classes(frame, top_k=1, threshold=0.3)
-    if classes:
-        score = classes[0].score
-        label = labels.get(classes[0].id)
-        vision.draw_label(frame, f'{label}: {round(score, 4)}')
+    classifier = vision.Classifier(args.model)
+    labels = read_label_file(args.labels)
+
+    for frame in vision.get_frames():
+        classes = classifier.get_classes(frame, top_k=1, threshold=0.3)
+        if classes:
+            score = classes[0].score
+            label = labels.get(classes[0].id)
+            vision.draw_label(frame, f'{label}: {round(score, 4)}')
+
+
+if __name__ == '__main__':
+    main()

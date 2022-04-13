@@ -12,6 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+APIs to simplify audio classification with a microphone.
+
+For more info, see https://aiyprojects.withgoogle.com/maker/#reference
+"""
+
 import contextlib
 import json
 import numpy as np
@@ -29,8 +35,10 @@ from tflite_support import metadata
 from . import ring_buffer
 from . import utils
 
+
 @contextlib.contextmanager
 def pyaudio_stream(*args, **kwargs):
+    """Context manager for the PyAudio stream."""
     audio = pyaudio.PyAudio()
     try:
         stream = audio.open(*args, **kwargs)
@@ -44,18 +52,21 @@ def pyaudio_stream(*args, **kwargs):
 
 
 def model_audio_properties(model_file):
+    """
+    Returns the audio sample rate and number of channels that must be used with
+    the given model (as a tuple in that order).
+    """
     displayer = metadata.MetadataDisplayer.with_model_file(model_file)
     metadata_json = json.loads(displayer.get_metadata_json())
     if metadata_json['name'] != 'AudioClassifier':
         raise ValueError('Model must be an audio classifier')
-    props = metadata_json['subgraph_metadata'][0]['input_tensor_metadata'][0] \
-                         ['content']['content_properties']
+    props = metadata_json['subgraph_metadata'][0]['input_tensor_metadata'][0]['content']['content_properties']
     return int(props['sample_rate']), int(props['channels'])
 
 
 def classify_audio(model, callback,
                    labels_file=None,
-                   inference_overlap_ratio=0.5,
+                   inference_overlap_ratio=0.1,
                    buffer_size_secs=2.0,
                    buffer_write_size_secs=0.1,
                    audio_device_index=None):
@@ -68,7 +79,7 @@ def classify_audio(model, callback,
     model input size, you can adjust the rate of inference with
     ``inference_overlap_ratio``. A larger overlap means the model runs inference
     more frequently but with larger amounts of sample data shared between
-    inferences.
+    inferences, which can result in duplicate results.
 
     Args:
         model (str): Path to a ``.tflite`` file.
@@ -83,7 +94,8 @@ def classify_audio(model, callback,
             between each sample used for inference. May be 0.0 up to (but not
             including) 1.0. For example, if set to 0.5 and the model takes a
             one-second sample as input, the model will run an inference every
-            half second, or if set to 0, it will run once each second.
+            half second, or if set to 0, then there is no overlap and
+            it will run once each second.
         buffer_size_secs (float): The length of audio to hold in the audio
             buffer.
         buffer_write_size_secs (float): The length of audio to capture into the
@@ -132,7 +144,7 @@ def classify_audio(model, callback,
     remove_size = int((1.0 - inference_overlap_ratio) * len(waveform))
 
     rb = ring_buffer.ConcurrentRingBuffer(
-            np.zeros(ring_buffer_size, dtype=np.float32))
+        np.zeros(ring_buffer_size, dtype=np.float32))
 
     def stream_callback(in_data, frame_count, time_info, status):
         try:
@@ -189,9 +201,9 @@ class AudioClassifier:
     def __init__(self, **kwargs):
         self._queue = queue.Queue()
         self._thread = threading.Thread(
-                target=classify_audio,
-                kwargs={'callback': self._callback, **kwargs},
-                daemon=True)
+            target=classify_audio,
+            kwargs={'callback': self._callback, **kwargs},
+            daemon=True)
         self._thread.start()
 
     def _callback(self, label, score):

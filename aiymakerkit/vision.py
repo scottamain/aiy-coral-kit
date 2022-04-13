@@ -12,6 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+Various APIs to simplify inferencing with vision ML models and a camera.
+
+Each class makes it easy to initialize a TensorFlow Lite interpreter for
+a certain vision task (such as pose detection or image classification),
+and then perform inferencing with an image and get the results in a structure
+that's appropriate for that task.
+
+The ``get_frames()`` function makes it easy to get a continuous stream of images
+from your camera, and various "draw" functions allow you to overlay your
+inference results on the image (such as ``draw_pose()`` to draw a human pose).
+
+For more info, see https://aiyprojects.withgoogle.com/maker/#reference
+"""
+
 import os.path
 import enum
 import platform

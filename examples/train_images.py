@@ -13,14 +13,35 @@
 # limitations under the License.
 
 """
-Capture images:
-  python3 collect_images.py -l my-labels.txt
+Trains a new image classification model using local images.
 
-Train new model using captured images (THIS SCRIPT):
-  python3 train_images.py -l my-labels.txt
+This script is designed for a three-step workflow with two other scripts:
 
-Run the model:
-  python3 classify_image.py -m my-model.tflite -l my-labels.txt
+1. Capture some images to train your model:
+
+    python3 collect_images.py -l my-labels.txt
+
+2. Train the model with those images, using this script (by default, this script
+looks for images in the "captures" directory, which is where the
+collect_images.py script saves them by default):
+
+    python3 train_images.py -l my-labels.txt
+
+3. And then run the model (my-model.tflite is the default name given to the
+retrained model but you can change it by passing the `--out_model` flag to
+the train_models.py script):
+
+    python3 classify_image.py -m my-model.tflite -l my-labels.txt
+
+NOTE: The retrained model is specifically built to run with acceleration on the
+Coral Edge TPU, so the model cannot run if your system does not have the
+Coral USB Accelerator or another Edge TPU attached.
+
+For information about the script options, run:
+
+    python3 train_images.py --help
+
+For more instructions, see https://aiyprojects.withgoogle.com/maker/
 """
 
 import argparse
@@ -32,10 +53,8 @@ from pycoral.adapters import classify
 from pycoral.adapters import common
 from pycoral.learn.imprinting.engine import ImprintingEngine
 from pycoral.utils.edgetpu import make_interpreter
-
 from pycoral.utils.dataset import read_label_file
-
-DEFAULT_BASE_MODEL = 'models/mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tflite'
+import models
 
 
 def read_image(path, shape):
@@ -71,16 +90,16 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--labels', '-l', type=str, required=True,
-                        help='Labels file')
+                        help='Labels file from your training dataset')
     parser.add_argument('--captures_dir', '-d', type=str,
                         default='captures',
-                        help='Captures directory')
+                        help='Captures directory with your training images')
     parser.add_argument('--model', '-m', type=str,
-                        default=DEFAULT_BASE_MODEL,
-                        help='Base model')
+                        default=models.CLASSIFICATION_IMPRINTING_MODEL,
+                        help='Base model that will be retrained')
     parser.add_argument('--out_model', '-om', type=str,
                         default='my-model.tflite',
-                        help='Output model')
+                        help='Output filename for the retrained model')
     args = parser.parse_args()
 
     labels = read_label_file(args.labels)
