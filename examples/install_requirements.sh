@@ -14,17 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Installs everything that's required to use the examples in this directory.
-# First it installs the aiymakerkit Python library and then all the
-# TensorFlow Lite models used by the examples.
+# Installs all the TensorFlow Lite models used by the examples.
 
 set -e
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEST_DATA_URL="https://github.com/google-coral/test_data/raw/master/"
 readonly MODEL_DIR="${SCRIPT_DIR}/models"
-
-python3 -m pip install ${SCRIPT_DIR}/..
 
 if [[ -d "${MODEL_DIR}" ]]; then
   echo "Models directory exists. Skipping downloads."

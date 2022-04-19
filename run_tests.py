@@ -24,22 +24,28 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def usb_accelerator_connected():
-    if subprocess.run(["lsusb", "-d", "18d1:9302"],
+    if subprocess.run(['lsusb', '-d', '18d1:9302'],
                       capture_output=True).returncode == 0:
         return True
-    if subprocess.run(["lsusb", "-d", "1a6e:089a"],
+    if subprocess.run(['lsusb', '-d', '1a6e:089a'],
                       capture_output=True).returncode == 0:
         return True
     return False
 
 
 def main():
+    print('--- Checking display ---')
+    if not os.environ['DISPLAY']:
+        print('No display detected. Make sure you can see your Raspberry Pi desktop.')
+        return 1
+    print('Display detected.\n')
+
     print('--- Checking required files ---')
     if not os.path.isfile(models.CLASSIFICATION_MODEL):
         print('Downloading files...')
-        subprocess.call(["bash", os.path.join(
+        subprocess.call(['bash', os.path.join(
             SCRIPT_DIR, 'examples', 'install_requirements.sh')])
-    print("Files okay.\n")
+    print('Found required files.\n')
 
     print('--- Testing camera ---')
     TIME_LIMIT = 4
