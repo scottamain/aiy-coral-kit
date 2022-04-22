@@ -20,10 +20,9 @@ person (the MoveNet model will detect only one person at a time):
 
     python3 detect_pose.py
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
-from pycoral.adapters.detect import BBox
 from aiymakerkit import vision
 import models
 

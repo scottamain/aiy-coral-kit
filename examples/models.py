@@ -15,8 +15,9 @@
 """
 A collection of TensorFlow Lite models for use with aiymakerkit examples.
 
-The files specified here do not exist until you run install_requirements.sh,
-which is actually called by the run_demo.sh script at the root of this repo.
+These files are already downloaded if you flashed the AIY Maker Kit
+system image for Raspberry Pi. Otherwise, you must download them by
+running the download_models.sh script in this directory.
 """
 
 import os.path

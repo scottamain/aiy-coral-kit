@@ -21,18 +21,19 @@ To classify things using a default MobileNet model, simply run the script:
 
 Or classify using your own model and labels file:
 
-    python3 classify_video.py -m my_model.tflite -l my_labels.txt
+    python3 classify_video.py -m my_model.tflite
 
 For information about the script options, run:
 
     python3 classify_video.py --help
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
 import argparse
 from pycoral.utils.dataset import read_label_file
 from aiymakerkit import vision
+from aiymakerkit.utils import read_labels_from_metadata
 import models
 
 
@@ -41,12 +42,16 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
                         help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
-    parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,
-                        help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
+    parser.add_argument('-l', '--labels', default=None,
+                        help='File path of labels file. If not specified, ' \
+                        'we get the labels from the model metadata.')
     args = parser.parse_args()
 
     classifier = vision.Classifier(args.model)
-    labels = read_label_file(args.labels)
+    if args.labels is not None:
+        labels = read_label_file(args.labels)
+    else:
+        labels = read_labels_from_metadata(args.model)
 
     for frame in vision.get_frames():
         classes = classifier.get_classes(frame, top_k=1, threshold=0.3)

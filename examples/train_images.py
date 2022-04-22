@@ -31,7 +31,7 @@ collect_images.py script saves them by default):
 retrained model but you can change it by passing the `--out_model` flag to
 the train_models.py script):
 
-    python3 classify_image.py -m my-model.tflite -l my-labels.txt
+    python3 classify_video.py -m my-model.tflite
 
 NOTE: The retrained model is specifically built to run with acceleration on the
 Coral Edge TPU, so the model cannot run if your system does not have the
@@ -41,7 +41,7 @@ For information about the script options, run:
 
     python3 train_images.py --help
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
 import argparse

@@ -22,8 +22,10 @@ from tflite_support import metadata
 
 
 def _associcated_labels_file(metadata_json):
-    for af in metadata_json['subgraph_metadata'][0]['output_tensor_metadata'][0]['associated_files']:
-        if af['type'] == 'TENSOR_AXIS_LABELS':
+    for ot in metadata_json['subgraph_metadata'][0]['output_tensor_metadata']:
+      if 'associated_files' in ot:
+        for af in ot['associated_files']:
+          if af['type'] in ('TENSOR_AXIS_LABELS', 'TENSOR_VALUE_LABELS'):
             return af['name']
     raise ValueError('Model metadata does not have associated labels file')
 

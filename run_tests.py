@@ -35,17 +35,22 @@ def usb_accelerator_connected():
 
 def main():
     print('--- Checking display ---')
-    if not os.environ['DISPLAY']:
-        print('No display detected. Make sure you can see your Raspberry Pi desktop.')
+    if not 'DISPLAY' in os.environ:
+        print('No display detected. You must have a display connected or ' \
+              'enabled so you can see the desktop. If you have a display ' \
+              'enabled but you are logged in via SSH, you need to specify ' \
+              'the display with `export DISPLAY=:0`, then retry this script.')
         return 1
-    print('Display detected.\n')
+    print('Found a display.\n')
 
     print('--- Checking required files ---')
     if not os.path.isfile(models.CLASSIFICATION_MODEL):
         print('Downloading files...')
         subprocess.call(['bash', os.path.join(
-            SCRIPT_DIR, 'examples', 'install_requirements.sh')])
-    print('Found required files.\n')
+            SCRIPT_DIR, 'examples', 'download_models.sh')])
+        subprocess.call(['bash', os.path.join(
+            SCRIPT_DIR, 'projects', 'download_models.sh')])
+    print('Found the required files.\n')
 
     print('--- Testing camera ---')
     TIME_LIMIT = 4
@@ -54,7 +59,7 @@ def main():
         elapsed = int(time.monotonic() - start)
         print('Closing video in...', TIME_LIMIT - elapsed, end='\r')
         if (elapsed >= TIME_LIMIT):
-            print('\nCamera okay.\n')
+            print('\nCamera is working.\n')
             break
 
     print('--- Testing USB Accelerator ---')
@@ -68,15 +73,15 @@ def main():
         classifier = vision.Classifier(models.CLASSIFICATION_MODEL)
         classes = classifier.get_classes(frame)
         if classes:
-            print('USB Accelerator okay.')
+            print('USB Accelerator is working.')
     except ValueError:
         traceback.print_exc()
-        print('Something went wrong.')
-        print(
-            'Try unplugging the USB Accelerator, then plug it back in and run the script again.')
+        print('Something went wrong with the USB Accelerator.')
+        print('Try unplugging the USB Accelerator, then plug it back in and ' \
+              'run the script again.')
         return 1
 
-    print('\nAll tests complete.')
+    print('\nEverything look good!')
     return 0
 
 

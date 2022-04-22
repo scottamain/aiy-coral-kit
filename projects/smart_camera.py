@@ -16,12 +16,15 @@
 This is an example project that automatically takes a photo when all faces
 detected by the model are near the center of the camera frame.
 
+The TensorFlow model required is already downloaded if you flashed the
+AIY Maker Kit system image for Raspberry Pi. Otherwise, you must download it
+by running the download_models.sh script in this directory.
+
 For more details about this project, see:
 https://aiyprojects.withgoogle.com/maker/#guides--build-a-face-detecting-smart-camera
 """
 
 import os.path
-import cv2
 import time
 from datetime import datetime
 from aiymakerkit import vision
@@ -30,6 +33,12 @@ from pycoral.adapters.detect import BBox
 PICTURE_DIR = os.path.join(os.path.expanduser('~'), 'Pictures')
 DELAY_SECS = 3
 snap_time = 0
+
+
+def path(name):
+    """ Creates an absolute path to a file in the same directory as this script."""
+    root = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(root, name)
 
 
 def box_is_in_box(bbox_a, bbox_b):
@@ -48,8 +57,9 @@ def box_is_in_box(bbox_a, bbox_b):
     return False
 
 
-# Load the neural network model
-detector = vision.Detector(vision.FACE_DETECTION_MODEL)
+# Load the TensorFlow Lite model (compiled for the Edge TPU)
+FACE_DETECTION_MODEL = path('ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite')
+detector = vision.Detector(FACE_DETECTION_MODEL)
 
 # Define the auto shutter detection zone
 width, height = vision.VIDEO_SIZE

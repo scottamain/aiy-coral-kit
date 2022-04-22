@@ -22,11 +22,17 @@ guesses about what proportion of the person's body must be in the fencee area
 to be considered inside it. So you probably need to adjust these parameters to
 suit your situation.
 
+The TensorFlow model required is already downloaded if you flashed the
+AIY Maker Kit system image for Raspberry Pi. Otherwise, you must download it
+by running the download_models.sh script in this directory.
+
 For more details about this project, see:
 https://aiyprojects.withgoogle.com/maker/#guides--build-a-person-detecting-security-camera
 """
 
+import os.path
 from aiymakerkit import vision
+from aiymakerkit import utils
 from pycoral.adapters.detect import BBox
 from pycoral.utils.dataset import read_label_file
 
@@ -35,9 +41,17 @@ RED = (0, 0, 255)
 GREEN = (0, 255, 0)
 BLUE = (255, 0, 0)
 
-# Load the neural network model
-detector = vision.Detector(vision.OBJECT_DETECTION_MODEL)
-labels = read_label_file(vision.OBJECT_DETECTION_LABELS)
+
+def path(name):
+    """ Creates an absolute path to a file in the same directory as this script."""
+    root = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(root, name)
+
+
+# Load the TensorFlow Lite model (compiled for the Edge TPU)
+OBJECT_DETECTION_MODEL = path('ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite')
+detector = vision.Detector(OBJECT_DETECTION_MODEL)
+labels = utils.read_labels_from_metadata(OBJECT_DETECTION_MODEL)
 
 # Define the protected fence region
 width, height = vision.VIDEO_SIZE

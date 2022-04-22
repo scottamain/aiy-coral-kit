@@ -20,9 +20,9 @@ simply run the script (and then press the Spacebar to capture an image):
 
     python3 classify_image.py
 
-Or classify from the camera using your own model and labels file:
+Or classify from the camera using your own model:
 
-    python3 classify_image.py -m my_model.tflite -l my_labels.txt
+    python3 classify_image.py -m my_model.tflite
 
 And to classify an existing image file, just pass your image:
 
@@ -32,7 +32,7 @@ For information about the script options, run:
 
     python3 classify_image.py --help
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
 import argparse
@@ -44,6 +44,7 @@ import tty
 from cv2 import imread
 from pycoral.utils.dataset import read_label_file
 from aiymakerkit import vision
+from aiymakerkit.utils import read_labels_from_metadata
 import models
 
 
@@ -113,14 +114,18 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-m', '--model', default=models.CLASSIFICATION_MODEL,
                         help='File path of .tflite file. Default is vision.CLASSIFICATION_MODEL')
-    parser.add_argument('-l', '--labels', default=models.CLASSIFICATION_LABELS,
-                        help='File path of labels file. Default is vision.CLASSIFICATION_LABELS')
+    parser.add_argument('-l', '--labels', default=None,
+                        help='File path of labels file. If not specified, ' \
+                        'we get the labels from the model metadata.')
     parser.add_argument('-i', '--input',
                         help='Image to be classified. If not given, use spacebar to capture and classify an image.')
     args = parser.parse_args()
 
     classifier = vision.Classifier(args.model)
-    labels = read_label_file(args.labels)
+    if args.labels is not None:
+        labels = read_label_file(args.labels)
+    else:
+        labels = read_labels_from_metadata(args.model)
 
     if args.input:
         frame = imread(args.input)

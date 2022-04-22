@@ -29,7 +29,7 @@ fi
 
 mkdir -p "${MODEL_DIR}"
 
-echo "Downloading demo files..."
+echo "Downloading model files..."
 (
   cd "${MODEL_DIR}" &&
     curl -OL "${TEST_DATA_URL}/tf2_mobilenet_v2_1.0_224_ptq_edgetpu.tflite" \

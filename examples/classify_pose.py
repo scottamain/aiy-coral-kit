@@ -27,7 +27,7 @@ Then just run this script:
 
     python3 classify_pose.py
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
 from aiymakerkit import vision

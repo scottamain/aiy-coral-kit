@@ -63,7 +63,7 @@ For information about all the script options, run:
 
     python3 collect_images.py --help
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
 import argparse

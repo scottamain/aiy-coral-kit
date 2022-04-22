@@ -18,17 +18,17 @@ Performs continuous object detection with the camera.
 Simply run the script and it will draw boxes around detected objects along
 with the predicted labels:
 
-    python3 detect_object.py
+    python3 detect_objects.py
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
-from pycoral.utils.dataset import read_label_file
 from aiymakerkit import vision
+from aiymakerkit import utils
 import models
 
 detector = vision.Detector(models.OBJECT_DETECTION_MODEL)
-labels = read_label_file(models.OBJECT_DETECTION_LABELS)
+labels = utils.read_labels_from_metadata(models.OBJECT_DETECTION_MODEL)
 
 for frame in vision.get_frames():
     objects = detector.get_objects(frame, threshold=0.4)

@@ -22,11 +22,10 @@ To run the script, pass a speech model as the only argument:
 Specifically, the model must be based on BrowserFFT, which you can train
 yourself at https://teachablemachine.withgoogle.com/train/audio
 
-For more instructions, see https://aiyprojects.withgoogle.com/maker/
+For more instructions, see g.co/aiy/maker
 """
 
 from aiymakerkit import audio
-
 import argparse
 
 

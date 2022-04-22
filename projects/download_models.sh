@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Performs continuous face detection with the camera.
+# Downloads TensorFlow Lite models for the projects.
 
-Simply run the script and it will draw boxes around detected faces:
+set -e
 
-    python3 detect_faces.py
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly TEST_DATA_URL="https://github.com/google-coral/test_data/raw/master/"
 
-For more instructions, see g.co/aiy/maker
-"""
-
-from aiymakerkit import vision
-import models
-
-detector = vision.Detector(models.FACE_DETECTION_MODEL)
-
-for frame in vision.get_frames():
-    faces = detector.get_objects(frame, threshold=0.1)
-    vision.draw_objects(frame, faces)
+echo "Downloading model files..."
+(
+  cd "${SCRIPT_DIR}" &&
+    curl \
+      -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_coco_quant_postprocess_edgetpu.tflite" \
+      -OL "${TEST_DATA_URL}/ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite"
+)
+echo "Done."
