@@ -374,7 +374,8 @@ def draw_rect(frame, bbox, color=BLUE, thickness=5):
 
 
 def get_frames(title='Camera', size=VIDEO_SIZE, handle_key=None,
-               capture_device_index=0, mirror=True, return_key=False):
+               capture_device_index=0, mirror=True, display=True,
+               return_key=False):
     """
     Gets a stream of image frames from the camera.
 
@@ -383,9 +384,12 @@ def get_frames(title='Camera', size=VIDEO_SIZE, handle_key=None,
       size (tuple): The image resolution for all frames, as an int tuple (x,y).
       handle_key: A callback function that accepts arguments (key, frame) for
         a key event and the image frame from the moment the key was pressed.
+        This has no effect if display is False.
       capture_device_index (int): The Linux device ID for the camera.
-      mirror (bool): Whether to flip the image horizontally (set True for a
+      mirror (bool): Whether to flip the images horizontally (set True for a
         selfie view).
+      display (bool): Whether to show the camera images in a desktop window
+        (set False if you don't use a desktop).
       return_key (bool): Whether to also return any key presses. If True, the
         function returns a tuple with (frame, key) instead of just the frame.
 
@@ -395,7 +399,7 @@ def get_frames(title='Camera', size=VIDEO_SIZE, handle_key=None,
     """
     width, height = size
 
-    if not handle_key:
+    if display and not handle_key:
         print("Press Q to quit")
 
         def handle_key(key, frame):
@@ -434,7 +438,8 @@ def get_frames(title='Camera', size=VIDEO_SIZE, handle_key=None,
                     yield (frame, key)
                 else:
                     yield frame
-                cv2.imshow(title, frame)
+                if display:
+                    cv2.imshow(title, frame)
 
             if key != -1 and not handle_key(key, frame):
                 break

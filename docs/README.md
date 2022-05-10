@@ -4,7 +4,7 @@ This directory holds the source files required to build the API
 reference with Sphinx.
 
 If you're looking for the setup and developer docs for `aiymakerkit`,
-go to https://g.co/coral/kit-guide.
+go to https://g.co/aiy/maker.
 
 ## Build the docs
 
